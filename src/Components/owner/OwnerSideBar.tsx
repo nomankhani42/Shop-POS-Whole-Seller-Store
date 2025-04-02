@@ -1,0 +1,82 @@
+'use client';
+import React from 'react';
+import Link from 'next/link';
+import { FaBars, FaHome, FaBox, FaChartLine, FaUsers, FaCog, FaSignOutAlt, FaWarehouse, FaClipboardCheck, FaTags } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { usePathname } from 'next/navigation'; // Use usePathname for routing in Next.js 13+
+
+interface SidebarProps {
+    isExpanded: boolean;
+    setIsExpanded: (value: boolean) => void;
+}
+
+const OwnerSidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
+    const pathname = usePathname(); // Get the current pathname
+
+    const menuItems = [
+        { name: "Dashboard", icon: <FaHome />, link: "/owner" },
+        { name: "Manage Products", icon: <FaBox />, link: "/owner/product-management" },
+        { name: "Category Management", icon: <FaTags />, link: "/owner/category-management" },
+        { name: "Inventory", icon: <FaWarehouse />, link: "#" },
+        { name: "Stock Management", icon: <FaClipboardCheck />, link: "#" },
+        { name: "Sales Reports", icon: <FaChartLine />, link: "#" },
+        { name: "Employee Management", icon: <FaUsers />, link: "#" },
+        { name: "Settings", icon: <FaCog />, link: "#" }
+    ];
+
+    return (
+        <motion.div 
+            animate={{ width: isExpanded ? "20rem" : "5rem" }} 
+            className="bg-yellow-500 h-screen sticky top-0 shadow-md transition-all duration-300 flex flex-col"
+        >
+            {/* Sidebar Toggle Button (Always Visible) */}
+            <div className="p-4 flex justify-between items-center">
+                <button 
+                    onClick={() => setIsExpanded(!isExpanded)} 
+                    className="p-2 bg-white rounded-full hover:bg-red-500 transition"
+                >
+                    <FaBars className="text-xl text-yellow-500" />
+                </button>
+            </div>
+
+            {/* Navigation Links */}
+            <nav className="mt-6 flex-1">
+                {menuItems.map((item, index) => (
+                    <Link key={index} href={item.link} passHref>
+                        <div 
+                            className={`group flex items-center gap-x-4 p-4 hover:bg-red-400 transition cursor-pointer 
+                                ${pathname === item.link ? 'bg-red-600' : ''}`} // Apply bg-red-500 if active
+                        >
+                            <span className="text-2xl text-white">{item.icon}</span>
+                            <motion.span 
+                                animate={{ opacity: isExpanded ? 1 : 0, scale: isExpanded ? 1 : 0.8 }} 
+                                transition={{ duration: 0.8 }} 
+                                className={`text-white font-semibold ${isExpanded ? 'block' : 'hidden'}`}
+                            >
+                                {item.name}
+                            </motion.span>
+                        </div>
+                    </Link>
+                ))}
+            </nav>
+
+            {/* Logout Button - Fixed at Bottom */}
+            <div className="mt-auto">
+                <Link href="#" passHref>
+                    <div className="group flex items-center gap-x-4 p-4 hover:bg-red-500 transition cursor-pointer">
+                        <span className="text-2xl text-white"><FaSignOutAlt /></span>
+                        <motion.span 
+                            animate={{ opacity: isExpanded ? 1 : 0, scale: isExpanded ? 1 : 0.8 }} 
+                            transition={{ duration: 0.3 }} 
+                            className={`text-white font-semibold ${isExpanded ? 'block' : 'hidden'}`}
+                        >
+                            Logout
+                        </motion.span>
+                    </div>
+                </Link>
+            </div>
+        </motion.div>
+    );
+};
+
+export default OwnerSidebar;
