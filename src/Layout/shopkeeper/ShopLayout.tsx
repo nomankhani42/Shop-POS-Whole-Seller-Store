@@ -12,7 +12,7 @@ const ShopLayout: FC<ShopLayoutProps> = ({ children }) => {
             <div >
             <Sidebar />
             </div>
-            <main className="flex-1 p-6 overflow-auto">
+            <main className='flex-1'>
                 {children}
             </main>
         </div>

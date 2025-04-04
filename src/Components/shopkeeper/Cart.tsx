@@ -1,136 +1,141 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiShoppingCart, FiX, FiPlus, FiMinus, FiUser, FiClock, FiTrash, FiPhone } from 'react-icons/fi';
+import { FiShoppingCart, FiMinus, FiPlus, FiTrash2, FiX } from 'react-icons/fi';
 
-const CartSidebar = () => {
-    const [isOpen, setIsOpen] = useState(true);
-    const [customerName, setCustomerName] = useState('');
-    const [customerPhone, setCustomerPhone] = useState('');
-    const [currentTime, setCurrentTime] = useState(new Date().toLocaleString());
-    
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentTime(new Date().toLocaleString());
-        }, 1000);
-        return () => clearInterval(timer);
-    }, []);
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
 
-    const [cartItems, setCartItems] = useState([
-        { id: 1, name: "Solar Panel", price: 5000, quantity: 2 },
-        { id: 2, name: "Battery Pack", price: 8000, quantity: 1 },
-        { id: 3, name: "Wire Bundle", price: 2000, quantity: 3 },
-    ]);
+const dummyProducts: CartItem[] = [
+  { id: 1, name: 'Solar Panel 100W', price: 12000, quantity: 1 },
+  { id: 2, name: 'Battery 12V 150Ah', price: 30000, quantity: 1 },
+  { id: 3, name: 'Solar Inverter 3kW', price: 45000, quantity: 1 },
+  { id: 4, name: 'Mounting Structure', price: 5000, quantity: 1 },
+  { id: 5, name: 'MC4 Connectors (Pair)', price: 800, quantity: 1 },
+];
 
-    const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+const Cart = () => {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [cart, setCart] = useState<CartItem[]>(dummyProducts);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [currentDate, setCurrentDate] = useState('');
 
-    const updateQuantity = (id, change) => {
-        setCartItems(cartItems.map(item =>
-            item.id === id ? { ...item, quantity: Math.max(1, item.quantity + change) } : item
-        ));
+  // Update current date and time
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentDate(now.toLocaleString());
     };
+    updateTime();
+    const timer = setInterval(updateTime, 60000); // Update every minute
+    return () => clearInterval(timer);
+  }, []);
 
-    const removeItem = (id) => {
-        setCartItems(cartItems.filter(item => item.id !== id));
-    };
+  // Increase quantity
+  const increaseQuantity = (id: number) => {
+    setCart(cart.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
+  };
 
-    return (
-        <div className="flex sticky top-0 justify-end w-full h-screen ">
-            <motion.div
-                initial={{ opacity: 0, x: "100%" }}
-                animate={{ width: isOpen ? "280px" : "0px", opacity: isOpen ? 1 : 0, x: isOpen ? "0%" : "100%" }}
-                transition={{ duration: 0.4 }}
-                className="h-full bg-white text-gray-900 shadow-lg p-4 flex flex-col border-l rounded-l-xl"
-            >
-                {/* Header */}
-                <div className="flex justify-between items-center border-b pb-3 border-gray-300">
-                    <h2 className="text-lg font-semibold">🛒 Cart</h2>
-                    <button onClick={() => setIsOpen(false)} className="text-gray-600 hover:text-gray-900">
-                        <FiX size={22} />
-                    </button>
-                </div>
-                
-                {/* Customer Info */}
-                <div className="mt-3 space-y-2">
-                    <div className="flex items-center bg-gray-100 rounded-md p-2">
-                        <FiUser className="text-gray-600 mr-2" />
-                        <input
-                            type="text"
-                            placeholder="Customer Name"
-                            value={customerName}
-                            onChange={(e) => setCustomerName(e.target.value)}
-                            className="flex-1 bg-transparent outline-none text-sm"
-                        />
-                    </div>
-                    <div className="flex items-center bg-gray-100 rounded-md p-2">
-                        <FiPhone className="text-gray-600 mr-2" />
-                        <input
-                            type="text"
-                            placeholder="Phone Number"
-                            value={customerPhone}
-                            onChange={(e) => setCustomerPhone(e.target.value)}
-                            className="flex-1 bg-transparent outline-none text-sm"
-                        />
-                    </div>
-                    <div className="flex items-center bg-gray-100 rounded-md p-2 text-sm">
-                        <FiClock className="text-gray-600 mr-2" />
-                        <span>{currentTime}</span>
-                    </div>
-                </div>
+  // Decrease quantity
+  const decreaseQuantity = (id: number) => {
+    setCart(cart.map(item => item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item));
+  };
 
-                {/* Cart Items */}
-                <div className="flex-1 overflow-y-auto mt-4 space-y-3">
-                    {cartItems.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow border">
-                            <div className="flex flex-col">
-                                <p className="font-medium text-gray-800">{item.name}</p>
-                                <p className="text-xs text-gray-600">Rs {item.price} x {item.quantity}</p>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <button
-                                    onClick={() => updateQuantity(item.id, -1)}
-                                    className="p-1 bg-gray-200 rounded-full hover:bg-red-500 hover:text-white transition"
-                                >
-                                    <FiMinus size={14} />
-                                </button>
-                                <span className="mx-2 font-semibold">{item.quantity}</span>
-                                <button
-                                    onClick={() => updateQuantity(item.id, 1)}
-                                    className="p-1 bg-gray-200 rounded-full hover:bg-green-500 hover:text-white transition"
-                                >
-                                    <FiPlus size={14} />
-                                </button>
-                                <button
-                                    onClick={() => removeItem(item.id)}
-                                    className="p-1 bg-gray-200 rounded-full hover:bg-gray-700 hover:text-white transition"
-                                >
-                                    <FiTrash size={14} />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                
-                {/* Footer */}
-                <div className="border-t border-gray-300 pt-3">
-                    <p className="text-lg font-semibold">Total: Rs {totalPrice}</p>
-                    <button className="w-full bg-yellow-500 text-white mt-2 py-2 rounded-lg font-bold hover:bg-yellow-600 transition">
-                        Checkout
-                    </button>
-                </div>
-            </motion.div>
-            
-            {/* Open Cart Button */}
-            {!isOpen && (
-                <button 
-                    className="fixed top-5 right-5 bg-yellow-600 p-3 rounded-full text-white shadow-lg hover:bg-yellow-700 transition"
-                    onClick={() => setIsOpen(true)}
-                >
-                    <FiShoppingCart size={24} />
-                </button>
-            )}
+  // Remove item from cart
+  const removeItem = (id: number) => {
+    setCart(cart.filter(item => item.id !== id));
+  };
+
+  // Calculate total
+  const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+  return (
+    <motion.div
+      initial={{ width: isExpanded ? 300 : 80 }}
+      animate={{ width: isExpanded ? 300 : 80 }}
+      className="sticky top-0 right-0 min-h-screen max-h-screen bg-gray-100 shadow-lg flex flex-col border-l border-gray-300 transition-all duration-300"
+    >
+      {/* Expand/Collapse Button */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="absolute left-[-40px] top-4 bg-yellow-500 text-white p-2 rounded-full shadow-md"
+      >
+        {isExpanded ? <FiX size={24} /> : <FiShoppingCart size={24} />}
+      </button>
+
+      {/* Cart Header */}
+      {isExpanded && (
+        <div className="p-4 bg-yellow-500 text-white text-lg font-semibold flex justify-between">
+          <span>Cart</span>
         </div>
-    );
+      )}
+
+      {/* Customer Info */}
+      {isExpanded && (
+        <div className="p-4">
+          <input
+            type="text"
+            placeholder="Customer Name"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            className="w-full p-2 mb-2 border rounded"
+          />
+          <input
+            type="text"
+            placeholder="Phone Number"
+            value={customerPhone}
+            onChange={(e) => setCustomerPhone(e.target.value)}
+            className="w-full p-2 mb-2 border rounded"
+          />
+          <div className="text-sm text-gray-600">Date: {currentDate}</div>
+        </div>
+      )}
+
+      {/* Cart Items */}
+      <div className="flex-1 overflow-y-auto">
+        {isExpanded && cart.length > 0 ? (
+          cart.map((item) => (
+            <div key={item.id} className="flex justify-between items-center p-3 border-b">
+              <div>
+                <p className="text-sm font-semibold">{item.name}</p>
+                <p className="text-xs text-gray-600">Rs {item.price.toLocaleString()}</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button onClick={() => decreaseQuantity(item.id)} className="p-1 bg-red-500 text-white rounded">
+                  <FiMinus size={16} />
+                </button>
+                <span>{item.quantity}</span>
+                <button onClick={() => increaseQuantity(item.id)} className="p-1 bg-green-500 text-white rounded">
+                  <FiPlus size={16} />
+                </button>
+                <button onClick={() => removeItem(item.id)} className="p-1 bg-gray-500 text-white rounded">
+                  <FiTrash2 size={16} />
+                </button>
+              </div>
+            </div>
+          ))
+        ) : isExpanded ? (
+          <p className="p-4 text-center text-gray-500">Cart is empty.</p>
+        ) : null}
+      </div>
+
+      {/* Cart Footer */}
+      {isExpanded && (
+        <div className="p-4 bg-white shadow-lg">
+          <div className="flex justify-between font-semibold">
+            <span>Total:</span>
+            <span>Rs {totalAmount.toLocaleString()}</span>
+          </div>
+          <button className="w-full mt-3 bg-red-500 text-white p-2 rounded shadow-md">Checkout</button>
+        </div>
+      )}
+    </motion.div>
+  );
 };
 
-export default CartSidebar;
+export default Cart;
