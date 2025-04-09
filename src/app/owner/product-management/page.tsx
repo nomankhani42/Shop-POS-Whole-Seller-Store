@@ -114,7 +114,7 @@ const ProductManagement = () => {
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
           <table className="w-full border-collapse">
             <thead className="bg-yellow-500 text-white">
-              <tr>
+              <tr className=" sticky top-0">
                 <th className="p-3 text-left">Image</th>
                 <th className="p-3 text-left">Name</th>
                 <th className="p-3 text-left">SKU</th>

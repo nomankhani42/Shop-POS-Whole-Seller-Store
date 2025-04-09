@@ -80,7 +80,10 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      await axios.put(`/api/category/update-category/${category._id}`, updatedData);
+      await axios.put(`/api/category/update-category/${category._id}`, {
+        title,
+        img: imageUrl
+      });
       toast.success("Category updated successfully!");
       onClose();
     } catch (err: any) {
@@ -182,11 +185,10 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
         <button
           onClick={handleSubmit}
           disabled={isSubmitting || (!titleChanged && !imageChanged)}
-          className={`w-full mt-6 py-3 text-white rounded-lg font-medium transition flex items-center justify-center gap-2 ${
-            isSubmitting || (!titleChanged && !imageChanged)
+          className={`w-full mt-6 py-3 text-white rounded-lg font-medium transition flex items-center justify-center gap-2 ${isSubmitting || (!titleChanged && !imageChanged)
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-red-600 hover:bg-red-700"
-          }`}
+            }`}
         >
           {isSubmitting ? (
             <>
