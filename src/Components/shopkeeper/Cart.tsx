@@ -58,7 +58,7 @@ const Cart = () => {
     <motion.div
       initial={{ width: isExpanded ? 300 : 80 }}
       animate={{ width: isExpanded ? 300 : 80 }}
-      className="sticky top-0 right-0 min-h-screen max-h-screen bg-gray-100 shadow-lg flex flex-col border-l border-gray-300 transition-all duration-300"
+      className="sticky  top-0 right-0 min-h-screen max-h-screen bg-gray-100 shadow-lg flex flex-col border-l border-gray-300 transition-all duration-300"
     >
       {/* Expand/Collapse Button */}
       <button
