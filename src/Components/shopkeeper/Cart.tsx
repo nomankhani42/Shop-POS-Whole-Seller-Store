@@ -18,8 +18,8 @@ const dummyProducts: CartItem[] = [
   { id: 5, name: 'MC4 Connectors (Pair)', price: 800, quantity: 1 },
 ];
 
-const Cart = () => {
-  const [isExpanded, setIsExpanded] = useState(true);
+const Cart = ({isExpanded, setIsExpanded}) => {
+  
   const [cart, setCart] = useState<CartItem[]>(dummyProducts);
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -63,7 +63,7 @@ const Cart = () => {
       {/* Expand/Collapse Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute left-[-40px] top-4 bg-yellow-500 text-white p-2 rounded-full shadow-md"
+        className="absolute left-[-40px] top-4 z-50 bg-yellow-500 text-white p-2 rounded-full shadow-md"
       >
         {isExpanded ? <FiX size={24} /> : <FiShoppingCart size={24} />}
       </button>

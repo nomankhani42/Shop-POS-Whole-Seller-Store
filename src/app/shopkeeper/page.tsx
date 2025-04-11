@@ -4,6 +4,8 @@ import ProductCard from '@/Components/shopkeeper/ProductCard';
 import ShopLayout from '@/Layout/shopkeeper/ShopLayout';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/Redux Store/index';
 import { FaSearch } from 'react-icons/fa';
 import profile from "@/assets/profile.webp";
 import Image from 'next/image';
@@ -32,6 +34,8 @@ const Page = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
+   const isExpandedMenu = useSelector((state: RootState) => state.sidebar.isExpanded);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const getProductsData = async () => {
     try {
@@ -83,10 +87,19 @@ const Page = () => {
     setSelectedCategory(prev => (prev === categoryId ? null : categoryId));
   };
 
+
+  const getDynamicWidth = () => {
+    const menuOffset = isExpandedMenu ? 280 : 80;
+    const otherOffset = isExpanded ? 300 : 80;
+    const totalOffset = menuOffset + otherOffset+100;
+  
+    return `calc(100vw - ${totalOffset}px)`;
+  };
+
   return (
     <ShopLayout>
       <div className='bg-red-500 flex'>
-        <main className='flex-1 bg-white'>
+        <main className='flex-1 bg-white' style={{ width: getDynamicWidth() }}>
           {/* Header */}
           <div className='h-[200px] p-5 bg-white sticky top-0 z-10'>
             <div className='flex justify-between items-center'>
@@ -111,34 +124,35 @@ const Page = () => {
             {/* Category Swiper */}
             <div className='pt-5'>
               {categories.length > 0 && (
-             <div className="overflow-hidden max-w-[1000px]">
-             <Swiper
-               spaceBetween={12}
-               slidesPerView="auto"
-               className="w-full"
-             >
-               {categories.map((item) => (
-                 <SwiperSlide
-                   key={item._id}
-                   onClick={() => handleCategoryClick(item._id)}
-                   className={`min-w-[90px] max-w-[100px] flex-shrink-0 cursor-pointer text-center rounded-lg p-2 transition-all duration-200 border 
+                <div className="overflow-hidden " >
+                  <Swiper
+                  className=' w-full'
+                    spaceBetween={12}
+                    slidesPerView="auto"
+                    
+                  >
+                    {categories.map((item) => (
+                      <SwiperSlide
+                        key={item._id}
+                        onClick={() => handleCategoryClick(item._id)}
+                        className={`min-w-[90px] max-w-[100px] flex-shrink-0 cursor-pointer text-center rounded-lg p-2 transition-all duration-200 border 
                      ${selectedCategory === item._id
-                       ? 'border-red-600 bg-red-100'
-                       : 'border-transparent hover:border-red-400'
-                     }`}
-                 >
-                   <img
-                     src={item.img}
-                     alt={item.title}
-                     className="w-16 h-16 object-contain mx-auto"
-                   />
-                   <p className="text-sm mt-1">{item.title}</p>
-                 </SwiperSlide>
-               ))}
-             </Swiper>
-           </div>
-           
-              
+                            ? 'border-red-600 bg-red-100'
+                            : 'border-transparent hover:border-red-400'
+                          }`}
+                      >
+                        <img
+                          src={item.img}
+                          alt={item.title}
+                          className="w-16 h-16 object-contain mx-auto"
+                        />
+                        <p className="text-sm mt-1">{item.title}</p>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </div>
+
+
               )}
             </div>
           </div>
@@ -157,7 +171,7 @@ const Page = () => {
           </div>
         </main>
 
-        <Cart />
+        <Cart isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
       </div>
     </ShopLayout>
   );
