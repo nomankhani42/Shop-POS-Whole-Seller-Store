@@ -12,7 +12,8 @@ type ProductType = {
 
 type Props = {
   item: ProductType;
-  onAddToCart?: (product: ProductType) => void;
+  onAddToCart?: (item: ProductType) => void;
+  
 };
 
 const ProductCard: React.FC<Props> = ({ item, onAddToCart }) => {
@@ -44,6 +45,7 @@ const ProductCard: React.FC<Props> = ({ item, onAddToCart }) => {
 
         {/* Add to Cart Button */}
         <button
+          onClick={()=>onAddToCart(item._id)}
           className={`mt-2 w-full text-sm ${
             item.stock > 0 ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400 cursor-not-allowed'
           } text-white font-semibold py-1.5 rounded-md transition-all`}

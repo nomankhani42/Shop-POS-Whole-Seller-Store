@@ -1,9 +1,11 @@
-'use client'; // Ensure this is a Client Component
+'use client';
 
+import { ReactNode } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
+import { SessionProvider } from 'next-auth/react';
+
 import { store, persistor } from '@/Redux Store/index';
-import { ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -11,11 +13,13 @@ interface Props {
 
 const ReduxProvider = ({ children }: Props) => {
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        {children}
-      </PersistGate>
-    </Provider>
+    <SessionProvider>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          {children}
+        </PersistGate>
+      </Provider>
+    </SessionProvider>
   );
 };
 

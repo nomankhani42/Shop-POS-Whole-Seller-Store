@@ -96,6 +96,16 @@ const Page = () => {
     return `calc(100vw - ${totalOffset}px)`;
   };
 
+
+  const onAddToCart=async(item:string)=>{
+    const response=await axios.post('api/cart/add-to-cart',{
+      product_id:item
+    })
+   
+    console.log(response)
+            
+  }
+
   return (
     <ShopLayout>
       <div className='bg-red-500 flex'>
@@ -162,7 +172,7 @@ const Page = () => {
             {filteredProducts.length > 0 ? (
               <div className="flex flex-wrap gap-3 justify-center">
                 {filteredProducts.map((item) => (
-                  <ProductCard key={item._id} item={item} />
+                  <ProductCard key={item._id} item={item} onAddToCart={onAddToCart} />
                 ))}
               </div>
             ) : (

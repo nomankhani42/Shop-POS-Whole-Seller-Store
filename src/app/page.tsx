@@ -1,88 +1,95 @@
 'use client';
+
 import React, { useState } from 'react';
-import { FaUserTie, FaStore } from 'react-icons/fa';
+import { signIn } from 'next-auth/react';
+import { FaLock, FaUser } from 'react-icons/fa';
+import axios from 'axios';
 
 const IntroPage = () => {
-  const [role, setRole] = useState<'owner' | 'shopkeeper'>('shopkeeper');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(`Logging in as ${role}`, { username, password });
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await signIn('credentials', {
+        redirect: true, // We'll handle redirect manually
+        username,
+        password,
+      });
+
+      
+
+     
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-center flex items-center justify-center px-4"
-      style={{ backgroundImage: 'url(https://www.transparenttextures.com/patterns/cubes.png)' }}
-    >
-      <div className="backdrop-blur-lg bg-white/80 rounded-xl shadow-xl flex flex-col md:flex-row w-full max-w-5xl overflow-hidden border border-yellow-200">
-
-        {/* Left Info */}
+    <div className="min-h-screen bg-gradient-to-tr from-yellow-100 to-red-100 flex items-center justify-center px-4">
+      <div className="bg-white rounded-xl shadow-lg flex flex-col md:flex-row w-full max-w-5xl overflow-hidden border border-yellow-300">
+        {/* Left Panel */}
         <div className="bg-gradient-to-br from-yellow-400 to-red-400 md:w-1/2 p-10 text-white flex flex-col justify-center">
-          <h2 className="text-4xl font-extrabold mb-4 drop-shadow-sm">Welcome to SmartPOS</h2>
-          <p className="mb-6 text-lg font-light">Simplify your sales. Empower your store.</p>
+          <h2 className="text-4xl font-extrabold mb-4 drop-shadow">SmartPOS</h2>
+          <p className="mb-6 text-lg font-light">Streamline your sales, manage stock, and make your store smarter.</p>
           <ul className="space-y-2 text-md font-medium">
-            <li>🛒 Sell products quickly & efficiently</li>
-            <li>📦 Manage and verify stock in real-time</li>
-            <li>📊 Owner reports and cash settlements</li>
-            <li>🔐 Role-based access & secure flow</li>
+            <li>🛒 Fast product sales & QR scanning</li>
+            <li>📦 Stock verification and purchase receipts</li>
+            <li>📊 Owner dashboards & cash settlements</li>
+            <li>🔐 Secure access with role-based login</li>
           </ul>
         </div>
 
-        {/* Right Form */}
+        {/* Login Form */}
         <div className="md:w-1/2 p-10 bg-white">
-          <div className="flex justify-center mb-6">
-            <button
-              onClick={() => setRole('shopkeeper')}
-              className={`px-6 py-2 flex items-center gap-2 rounded-l-lg font-semibold transition duration-300
-                ${role === 'shopkeeper'
-                  ? 'bg-yellow-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-yellow-100'}`}
-            >
-              <FaStore /> Shopkeeper
-            </button>
-            <button
-              onClick={() => setRole('owner')}
-              className={`px-6 py-2 flex items-center gap-2 rounded-r-lg font-semibold transition duration-300
-                ${role === 'owner'
-                  ? 'bg-red-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-red-100'}`}
-            >
-              <FaUserTie /> Owner
-            </button>
-          </div>
-
+          <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Login to Your Account</h3>
           <form onSubmit={handleLogin} className="space-y-5">
+            {error && <p className="text-red-600 text-sm text-center">{error}</p>}
             <div>
               <label className="block text-gray-700 font-medium mb-1">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                required
-              />
+              <div className="flex items-center border rounded-md px-3 py-2">
+                <FaUser className="text-gray-400 mr-2" />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full outline-none"
+                  placeholder="Enter your username"
+                  required
+                />
+              </div>
             </div>
             <div>
               <label className="block text-gray-700 font-medium mb-1">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                required
-              />
+              <div className="flex items-center border rounded-md px-3 py-2">
+                <FaLock className="text-gray-400 mr-2" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full outline-none"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
             </div>
             <button
               type="submit"
-              className={`w-full py-3 rounded-md text-white font-bold shadow-md transition duration-300
-                ${role === 'owner'
-                  ? 'bg-red-500 hover:bg-red-600'
-                  : 'bg-yellow-500 hover:bg-yellow-600'}`}
+              disabled={loading}
+              className={`w-full py-3 rounded-md text-white font-bold shadow-md transition duration-300 ${
+                loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-yellow-500 hover:bg-yellow-600'
+              }`}
             >
-              Login as {role === 'owner' ? 'Owner' : 'Shopkeeper'}
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
         </div>

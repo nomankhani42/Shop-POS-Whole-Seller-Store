@@ -1,18 +1,19 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ICartItem {
-  productId: mongoose.Types.ObjectId; // Reference to the Product model
-  quantity: number; // Quantity of the product in the cart
-  name: string; // Name of the product (you can store it here to avoid additional queries)
-  price: number; // Selling price of the product
+  productId: mongoose.Types.ObjectId;
+  quantity: number;
+  name: string;
+  price: number;
 }
 
 export interface IUser extends Document {
   name: string;
   username: string;
+  password: string; // 👈 Password added
   role: 'owner' | 'shopkeeper';
   storeName: string;
-  cart: ICartItem[]; // Cart field added
+  cart: ICartItem[];
 }
 
 const userSchema: Schema<IUser> = new Schema(
@@ -26,10 +27,14 @@ const userSchema: Schema<IUser> = new Schema(
       required: true,
       unique: true,
     },
+    password: {
+      type: String,
+      required: true, // 👈 Password is required
+    },
     role: {
       type: String,
       enum: ['owner', 'shopkeeper'],
-      required: true,
+      default: 'owner',
     },
     storeName: {
       type: String,
@@ -40,7 +45,7 @@ const userSchema: Schema<IUser> = new Schema(
       {
         productId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product', // Assuming there's a Product model you want to reference
+          ref: 'Product',
           required: true,
         },
         quantity: {
