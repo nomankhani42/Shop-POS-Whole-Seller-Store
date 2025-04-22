@@ -11,7 +11,8 @@ import {
   FaSignOutAlt,
   FaWarehouse,
   FaClipboardCheck,
-  FaTags
+  FaTags,
+  FaDollarSign
 } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
@@ -29,9 +30,9 @@ const OwnerSidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => 
     { name: "Dashboard", icon: <FaHome />, link: "/owner" },
     { name: "Manage Products", icon: <FaBox />, link: "/owner/product-management" },
     { name: "Category Management", icon: <FaTags />, link: "/owner/category-management" },
-    { name: "Inventory", icon: <FaWarehouse />, link: "#" },
+    { name: "Cash Settlement", icon: <FaDollarSign />, link: "/owner/cash-settlement" },
     { name: "Stock Management", icon: <FaClipboardCheck />, link: "#" },
-    { name: "Sales Reports", icon: <FaChartLine />, link: "#" },
+    { name: "Sales Reports", icon: <FaChartLine />, link: "/owner/sales-report" },
     { name: "Employee Management", icon: <FaUsers />, link: "#" },
     { name: "Settings", icon: <FaCog />, link: "#" }
   ];

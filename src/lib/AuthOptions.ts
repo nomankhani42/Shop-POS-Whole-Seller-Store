@@ -43,6 +43,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.id = user.id; // ✅ Save user ID into token
         token.role = user.role;
         token.username = user.username;
         token.storeName = user.storeName;
@@ -51,6 +52,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token) {
+        session.user.id = token.id; // ✅ Attach user ID to session
         session.user.role = token.role;
         session.user.username = token.username;
         session.user.storeName = token.storeName;
@@ -58,6 +60,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  
   pages: {
     signIn: '/', // Your custom login page
   },

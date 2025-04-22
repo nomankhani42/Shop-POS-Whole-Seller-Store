@@ -20,7 +20,6 @@ export async function POST(req: NextRequest) {
 
   // Find the user
   const user = await User.findById(token.sub);
-
   if (!user) {
     return NextResponse.json(
       { success: false, message: 'User not found.' },
@@ -40,7 +39,6 @@ export async function POST(req: NextRequest) {
 
   // Find the product
   const product = await ProductModel.findById(product_id);
-
   if (!product) {
     return NextResponse.json(
       {
@@ -55,7 +53,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: `No More stock available for this product.`,
+        message: `No more stock available for this product.`,
       },
       { status: 400 }
     );
@@ -79,6 +77,11 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // ✅ Decrease product stock
+  product.stock -= 1;
+  await product.save();
+
+  // Save user cart
   await user.save();
 
   return NextResponse.json(

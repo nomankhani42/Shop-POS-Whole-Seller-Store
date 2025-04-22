@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 
-type ProductType = {
+export type ProductType = {
   _id: string;
   name: string;
   brand: string;
@@ -13,10 +13,15 @@ type ProductType = {
 type Props = {
   item: ProductType;
   onAddToCart?: (item: ProductType) => void;
-  
 };
 
 const ProductCard: React.FC<Props> = ({ item, onAddToCart }) => {
+  const handleAddToCart = () => {
+    if (onAddToCart && item.stock > 0) {
+      onAddToCart(item); // ✅ pass the full item, not just item._id
+    }
+  };
+
   return (
     <div className="w-[220px] bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-xl transition-all duration-200">
       {/* Product Image */}
@@ -41,16 +46,17 @@ const ProductCard: React.FC<Props> = ({ item, onAddToCart }) => {
           </span>
         </div>
 
-        <p className="text-sm font-bold text-red-700">Rs {item.sellingPrice.toLocaleString()}</p>
+        <p className="text-sm font-bold text-red-700">
+          Rs {item.sellingPrice.toLocaleString('en-PK')}
+        </p>
 
         {/* Add to Cart Button */}
         <button
-          onClick={()=>onAddToCart(item._id)}
+          onClick={handleAddToCart}
           className={`mt-2 w-full text-sm ${
             item.stock > 0 ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400 cursor-not-allowed'
           } text-white font-semibold py-1.5 rounded-md transition-all`}
           disabled={item.stock === 0}
-          
         >
           {item.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
         </button>
