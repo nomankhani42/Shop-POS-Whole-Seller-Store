@@ -1,10 +1,11 @@
+import OwnerLayout from "@/Layout/owner/OwnerLayout"
 
 
 const page = () => {
     return (
-      <div>
+      <OwnerLayout>
          Owner Stock Management
-      </div>
+      </OwnerLayout>
     )
   }
   
