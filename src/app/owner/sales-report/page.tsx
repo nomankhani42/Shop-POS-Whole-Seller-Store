@@ -1,8 +1,6 @@
 "use client";
 
-
 import { useEffect, useState } from "react";
-
 import {
   BarChart,
   Bar,
@@ -18,6 +16,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import axios from "axios";
 import OwnerLayout from "@/Layout/owner/OwnerLayout";
+import { Loader } from "lucide-react"; // Import Lucide React Loader
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#E63946"];
 
@@ -43,8 +42,8 @@ const SalesHistory = () => {
   if (loading || !salesData) {
     return (
       <OwnerLayout>
-        <div className="flex flex-1 justify-center items-center h-[100vh]">
-          <div className="w-12 h-12 border-4  border-yellow-500 border-dashed rounded-full animate-spin"></div>
+        <div className="flex justify-center items-center h-screen">
+          <Loader className="w-12 h-12 text-yellow-500 animate-spin" />
         </div>
       </OwnerLayout>
     );
