@@ -7,6 +7,7 @@ import { Plus, X, Trash2, Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
+import Image from 'next/image';
 
 // Interfaces
 interface Product {
@@ -218,7 +219,7 @@ const StockSection = ({
             className={`border-l-4 ${borderColor} bg-white shadow p-4 rounded flex items-center gap-4`}
           >
             {product.image && (
-              <img src={product.image} alt={product.name} className="w-16 h-16 rounded object-cover" />
+              <Image src={product.image} height={56} width={56} alt={product.name} className="rounded object-cover" />
             )}
             <div>
               <h3 className="font-semibold">{product.name}</h3>
@@ -371,7 +372,7 @@ const AddStockModal = ({
                     className="flex items-center gap-2 p-2 hover:bg-yellow-100 cursor-pointer rounded"
                   >
                     {product.image && (
-                      <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
+                      <Image src={product.image} height={40} width={40} alt={product.name} className=" rounded object-cover" />
                     )}
                     <span className="flex-1">{product.name}</span>
                     {/* Display Available Stock in Dropdown */}
@@ -398,10 +399,12 @@ const AddStockModal = ({
                   >
                     <div className="flex items-center gap-4">
                       {product.image && (
-                        <img
+                        <Image
+                        width={48}
+                        height={48}
                           src={product.image}
                           alt={product.name}
-                          className="w-12 h-12 rounded object-cover"
+                          className=" rounded object-cover"
                         />
                       )}
                       <div>

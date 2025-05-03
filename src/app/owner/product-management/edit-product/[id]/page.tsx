@@ -7,6 +7,7 @@ import OwnerLayout from "@/Layout/owner/OwnerLayout";
 import { FaSave, FaArrowLeft, FaSpinner } from "react-icons/fa";
 import Spinner from "@/Components/Spinner";
 import FileUpload from "@/Components/FileUpload";
+import Image from "next/image";
 
 interface Product {
   _id: string;
@@ -217,11 +218,11 @@ const EditProduct = () => {
               {/* Image Previews */}
               <div className="col-span-2 grid grid-cols-2 gap-6">
                 <div className="flex items-center gap-x-5">
-                  {form.barcode && <img src={form.barcode} alt="Barcode" className="w-40 h-20 mt-2 rounded-lg border object-contain" />}
-                  {form.qrCodeUrl && <img src={form.qrCodeUrl} alt="QR Code" className="w-20 h-20 mt-2 rounded-lg border object-contain" />}
+                  {form.barcode && <Image height={80} width={160} src={form.barcode} alt="Barcode" className=" mt-2 rounded-lg border object-contain" />}
+                  {form.qrCodeUrl && <Image height={80} width={80} src={form.qrCodeUrl} alt="QR Code" className=" mt-2 rounded-lg border object-contain" />}
                 </div>
                 <div>
-                  {form.image && !uploading && <img src={form.image} alt="Product" className="w-40 h-40 mt-2 rounded-lg border object-contain" />}
+                  {form.image && !uploading && <Image height={160} width={160} src={form.image} alt="Product" className=" mt-2 rounded-lg border object-contain" />}
                 </div>
               </div>
             </div>

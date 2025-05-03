@@ -5,6 +5,7 @@ import OwnerLayout from "@/Layout/owner/OwnerLayout";
 import { FaPlus, FaEdit, FaTrash, FaSearch } from "react-icons/fa";
 import Link from "next/link";
 import DeleteProductModal from "@/Components/owner/Modal/DeleteProduct";
+import Image from "next/image";
 
 const API_URL = "/api/product/get-products";
 const CATEGORY_API = "/api/category/get-category";
@@ -135,10 +136,12 @@ const ProductManagement = () => {
                 <tr key={product._id} className="border-b hover:bg-gray-100">
                   {/* Product Image */}
                   <td className="p-3">
-                    <img
+                    <Image
+                    height={56}
+                    width={56}
                       src={product.image || "/default-image.png"}
                       alt={product.name}
-                      className="w-14 h-14 object-contain rounded-lg"
+                      className=" object-contain rounded-lg"
                       onError={(e) => (e.target.src = "/default-image.png")}
                     />
                   </td>
@@ -159,10 +162,12 @@ const ProductManagement = () => {
 
                   {/* QR Code */}
                   <td className="p-3">
-                    <img
+                    <Image
+                    height={40}
+                    width={40}
                       src={product.qrCodeUrl || "/default-qr.png"}
                       alt="QR Code"
-                      className="w-10 h-10 object-contain"
+                      className=" object-contain"
                       onError={(e) => (e.target.src = "/default-qr.png")}
                     />
                   </td>

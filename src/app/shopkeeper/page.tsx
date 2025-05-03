@@ -210,7 +210,7 @@ const Page: React.FC = () => {
                           : 'border-transparent hover:border-red-400'
                         }`}
                     >
-                      <img src={item.img} alt={item.title} className="w-16 h-16 object-contain mx-auto" />
+                      <Image src={item.img} height={56} width={56} alt={item.title} className=" object-contain mx-auto" />
                       <p className="text-sm mt-1">{item.title}</p>
                     </SwiperSlide>
                   ))}

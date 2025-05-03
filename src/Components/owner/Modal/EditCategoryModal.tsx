@@ -166,9 +166,12 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                 className="relative w-full h-full flex items-center justify-center"
               >
                 <Image
+                layout="responsive" // Makes the image responsive
+                 height={100} // Aspect ratio height
+                 width={100} // Aspect ratio width
                   src={imageUrl}
                   alt="Preview"
-                  className="max-h-full max-w-full object-contain"
+                  className=" object-contain"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                   <CheckCircle className="text-green-500 w-10 h-10" />

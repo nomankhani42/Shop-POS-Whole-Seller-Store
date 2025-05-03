@@ -6,6 +6,7 @@ import OwnerLayout from "@/Layout/owner/OwnerLayout";
 import AddCategoryModal from "@/Components/owner/Modal/AddCategory";
 import DeleteCategoryModal from "@/Components/owner/Modal/DeleteCategory";
 import EditCategoryModal from "@/Components/owner/Modal/EditCategoryModal";
+import Image from "next/image";
 
 interface Category {
   _id: string;
@@ -85,11 +86,11 @@ const CategoriesPage: React.FC = () => {
 
         {/* Category Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {loading ?(
-  <div className="col-span-full flex justify-center items-center py-12">
-    <Loader className="w-8 h-8 text-yellow-500 animate-spin" />
-  </div>
-) : error ? (
+          {loading ? (
+            <div className="col-span-full flex justify-center items-center py-12">
+              <Loader className="w-8 h-8 text-yellow-500 animate-spin" />
+            </div>
+          ) : error ? (
             <p className="text-center col-span-full text-red-600">{error}</p>
           ) : filteredCategories.length === 0 ? (
             <p className="text-center col-span-full text-gray-500">No categories found.</p>
@@ -101,10 +102,13 @@ const CategoriesPage: React.FC = () => {
               >
                 <div className="h-24  overflow-hidden mb-3  hover:scale-105 transition-transform duration-200">
                   {category.img ? (
-                    <img
+                    <Image
+                    layout="responsive" // Makes the image responsive
+                    width={100} // Aspect ratio width
+                    height={100} // Aspect ratio height
                       src={category.img}
                       alt={category.title}
-                      className="w-full h-full object-cover"
+                      className=" object-cover"
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full text-gray-400 text-xs text-center px-2">
