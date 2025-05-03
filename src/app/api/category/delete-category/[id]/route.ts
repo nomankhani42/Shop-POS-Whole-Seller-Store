@@ -1,16 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/DB";
 import CategoryModel from "@/models/category";
 
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
-) {
+): Promise<NextResponse> {
   await dbConnect();
 
-  const id = params.id;
+  const categoryId = params.id;
 
-  if (!id) {
+  if (!categoryId) {
     return NextResponse.json(
       { success: false, message: "Category ID is required" },
       { status: 400 }
@@ -18,7 +18,7 @@ export async function DELETE(
   }
 
   try {
-    const deletedCategory = await CategoryModel.findByIdAndDelete(id);
+    const deletedCategory = await CategoryModel.findByIdAndDelete(categoryId);
 
     if (!deletedCategory) {
       return NextResponse.json(
@@ -34,7 +34,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting category:", error);
     return NextResponse.json(
-      { success: false, message: "Internal Server Error" },
+      { success: false, message: "Internal server error" },
       { status: 500 }
     );
   }
