@@ -1,6 +1,6 @@
 // src/models/Stock.ts (or .js if you're using JavaScript)
 
-import mongoose, { Schema, Document, Types, model, models } from "mongoose";
+import mongoose, { Schema, Document, Types, models } from "mongoose";
 
 // Interface for a single product in the stock
 interface IStockProduct {

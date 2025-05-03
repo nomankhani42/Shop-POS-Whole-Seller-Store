@@ -1,5 +1,5 @@
 // types/next-auth.d.ts (or anywhere in your project with proper module resolution)
-import NextAuth from 'next-auth';
+
 
 declare module 'next-auth' {
   interface Session {
