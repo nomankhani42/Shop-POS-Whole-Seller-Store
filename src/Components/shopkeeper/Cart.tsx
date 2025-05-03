@@ -122,11 +122,15 @@ const Cart: React.FC<CartProps> = ({
         setCustomerName("");
         setCustomerPhone("");
         setCart([]);
-        // setIsExpanded(false);
       }
-    } catch (err: any) {
-      console.error("❌ Error during checkout:", err.response?.data || err.message);
-      toast.error("Something went wrong while processing the sale.");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        console.error("❌ Axios error during checkout:", err.response?.data || err.message);
+        toast.error(err.response?.data?.message || "Something went wrong while processing the sale.");
+      } else {
+        console.error("❌ Unknown error during checkout:", err);
+        toast.error("An unexpected error occurred.");
+      }
     } finally {
       setCheckoutLoading(false);
     }

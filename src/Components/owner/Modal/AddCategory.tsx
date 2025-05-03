@@ -14,12 +14,17 @@ interface ModalProps {
   onClose: () => void;
 }
 
+interface Category {
+  title: string;
+  img: string;
+}
+
 const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
-  const [title, setTitle] = useState("");
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState<string>(""); // Specify type as string
+  const [imageUrl, setImageUrl] = useState<string | null>(null); // Specify type as string or null
+  const [uploadProgress, setUploadProgress] = useState<number>(0); // Specify type as number
+  const [isUploading, setIsUploading] = useState<boolean>(false); // Specify type as boolean
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // Specify type as boolean
 
   const handleUploadProgress = (progress: number) => {
     setUploadProgress(progress);

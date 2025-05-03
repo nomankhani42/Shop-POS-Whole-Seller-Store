@@ -81,14 +81,17 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      await axios.put(`/api/category/update-category/${category._id}`, {
-        title,
-        img: imageUrl
-      });
+      await axios.put(`/api/category/update-category/${category._id}`, updatedData);
       toast.success("Category updated successfully!");
       onClose();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to update category");
+    } catch (err: unknown) {
+      // Narrow down the error type
+      if (axios.isAxiosError(err)) {
+        toast.error(err.response?.data?.message || "Failed to update category");
+      } else {
+        console.error("Unexpected error:", err);
+        toast.error("An unexpected error occurred.");
+      }
     } finally {
       setIsSubmitting(false);
     }
