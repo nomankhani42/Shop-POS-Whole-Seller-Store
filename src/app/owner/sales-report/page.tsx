@@ -43,6 +43,13 @@ interface SalesData {
   allTransactions: Transaction[];
 }
 
+// Extend jsPDF to include the autoTable plugin's properties
+interface jsPDFWithAutoTable extends jsPDF {
+  lastAutoTable?: {
+    finalY: number;
+  };
+}
+
 const SalesHistory = () => {
   const [salesData, setSalesData] = useState<SalesData | null>(null); // Properly typed
   const [loading, setLoading] = useState(true);
@@ -81,7 +88,7 @@ const SalesHistory = () => {
   ];
 
   const generatePDF = (sale: Transaction) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF() as jsPDFWithAutoTable;
     doc.setFontSize(12);
     doc.text("Invoice", 90, 10);
     doc.text(`Sale ID: ${sale._id}`, 10, 20);
@@ -109,7 +116,7 @@ const SalesHistory = () => {
       0
     );
 
-    const finalY = (doc as any).lastAutoTable.finalY || 70;
+    const finalY = doc.lastAutoTable?.finalY || 70; // Use the extended type
     doc.text(`Total: Rs. ${total}`, 140, finalY + 10);
     doc.save(`Invoice_${sale.customerName}_${sale._id}.pdf`);
   };

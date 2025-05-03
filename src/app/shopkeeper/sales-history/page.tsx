@@ -15,9 +15,13 @@ import {
 } from "recharts";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import axios from "axios";
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#E63946"];
+// Extend jsPDF to include the autoTable plugin's properties
+interface jsPDFWithAutoTable extends jsPDF {
+  lastAutoTable?: {
+    finalY: number;
+  };
+}
 
 // Define types
 interface Product {
@@ -41,6 +45,8 @@ interface SalesData {
   mostSoldProducts: { name: string; quantitySold: number }[];
   allTransactions: Transaction[];
 }
+
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#E63946"];
 
 const SalesHistory = () => {
   const [salesData, setSalesData] = useState<SalesData | null>(null); // Properly typed
@@ -80,7 +86,7 @@ const SalesHistory = () => {
   ];
 
   const generatePDF = (sale: Transaction) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF() as jsPDFWithAutoTable;
     doc.setFontSize(12);
     doc.text("Invoice", 90, 10);
     doc.text(`Sale ID: ${sale._id}`, 10, 20);
@@ -108,7 +114,7 @@ const SalesHistory = () => {
       0
     );
 
-    const finalY = (doc as any).lastAutoTable.finalY || 70;
+    const finalY = doc.lastAutoTable?.finalY || 70; // Use the extended type
     doc.text(`Total: Rs. ${total}`, 140, finalY + 10);
     doc.save(`Invoice_${sale.customerName}_${sale._id}.pdf`);
   };
