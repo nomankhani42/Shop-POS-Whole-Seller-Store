@@ -1,24 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { NextApiResponse } from "next";
+import type { NextRequest as NextReq, NextResponse as NextRes } from "next/server";
 import dbConnect from "@/lib/DB";
 import CategoryModel from "@/models/category";
 
-// Corrected parameter typing
+// ✅ Import RouteHandlerContext from next
+import type { NextApiRequest } from "next";
+import type { RouteHandlerContext } from "next/dist/server/web/types";
+
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: RouteHandlerContext<{ id: string }>
 ) {
   await dbConnect();
 
+  const id = context.params.id;
+
+  if (!id) {
+    return NextResponse.json(
+      { success: false, message: "Category ID is required" },
+      { status: 400 }
+    );
+  }
+
   try {
-    const id = context.params.id;
-
-    if (!id) {
-      return NextResponse.json(
-        { success: false, message: "Category ID is required" },
-        { status: 400 }
-      );
-    }
-
     const deletedCategory = await CategoryModel.findByIdAndDelete(id);
 
     if (!deletedCategory) {
