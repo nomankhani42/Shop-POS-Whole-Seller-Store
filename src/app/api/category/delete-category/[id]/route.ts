@@ -1,17 +1,16 @@
-// src/app/api/category/delete-category/[id]/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/DB";
 import CategoryModel from "@/models/category";
 
+// Corrected parameter typing
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
-  await dbConnect(); // ✅ Connect to MongoDB
+  await dbConnect();
 
   try {
-    const id = params?.id;
+    const id = context.params.id;
 
     if (!id) {
       return NextResponse.json(
