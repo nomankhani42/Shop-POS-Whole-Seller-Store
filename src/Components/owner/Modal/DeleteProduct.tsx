@@ -28,8 +28,8 @@ const DeleteProductModal: React.FC<DeleteProductModalProps> = ({
       onDeleteSuccess(); // Refresh product list or update UI
       onClose();
     } catch (error) {
-      console.error("Error deleting product:", error);
-      alert("Failed to delete product.");
+      
+      alert("Failed to delete product." + error);
     } finally {
       setLoading(false);
     }

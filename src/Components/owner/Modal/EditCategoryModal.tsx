@@ -7,6 +7,7 @@ import axios from "axios";
 import FileUpload from "@/Components/FileUpload";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Image from "next/image";
 
 interface EditCategoryModalProps {
   isOpen: boolean;
@@ -164,7 +165,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                 transition={{ duration: 0.3 }}
                 className="relative w-full h-full flex items-center justify-center"
               >
-                <img
+                <Image
                   src={imageUrl}
                   alt="Preview"
                   className="max-h-full max-w-full object-contain"

@@ -6,10 +6,10 @@ import {
   FaHome,
   FaBox,
   FaChartLine,
-  FaUsers,
+ 
   FaCog,
   FaSignOutAlt,
-  FaWarehouse,
+ 
   FaClipboardCheck,
   FaTags,
   FaDollarSign

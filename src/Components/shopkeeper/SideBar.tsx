@@ -20,16 +20,7 @@ import { signOut } from 'next-auth/react'; // ✅ Import signOut from next-auth
 const Sidebar = () => {
   const dispatch = useDispatch();
   const isExpanded = useSelector((state: RootState) => state.sidebar.isExpanded);
-  const [showText, setShowText] = useState(false);
 
-  useEffect(() => {
-    if (isExpanded) {
-      const timer = setTimeout(() => setShowText(true), 200);
-      return () => clearTimeout(timer);
-    } else {
-      setShowText(false);
-    }
-  }, [isExpanded]);
 
   return (
     <motion.aside
