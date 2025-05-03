@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { FaLock, FaUser } from 'react-icons/fa';
-import axios from 'axios';
 
 const IntroPage = () => {
   const [username, setUsername] = useState('');
@@ -17,15 +16,11 @@ const IntroPage = () => {
     setError('');
 
     try {
-      const res = await signIn('credentials', {
+      await signIn('credentials', {
         redirect: true, // We'll handle redirect manually
         username,
         password,
       });
-
-      
-
-     
     } catch (err) {
       console.error('Login error:', err);
       setError('Something went wrong');

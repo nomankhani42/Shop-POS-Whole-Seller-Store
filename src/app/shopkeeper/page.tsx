@@ -133,12 +133,16 @@ const Page: React.FC = () => {
       await axios.put('/api/cart/add-single-quantity', { product_id: productId });
       setCartUpdateTrigger(prev => !prev);
       await getProductsData();
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message;
-      if (errorMessage) {
-        toast.warning("🚫 No more quantity available for this product");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data?.message;
+        if (errorMessage) {
+          toast.warning("🚫 No more quantity available for this product");
+        } else {
+          console.error("Error increasing quantity:", error.message);
+        }
       } else {
-        console.error("Error increasing quantity", error);
+        console.error("Unknown error:", error);
       }
     } finally {
       setDisabledQuantityId(null);

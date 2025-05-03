@@ -3,8 +3,11 @@ import connectDB from "@/lib/DB";
 import Product from "@/models/product";
 import Stock from "@/models/Stock"; // Assuming you have a Stock model defined
 
-// Connect to the database first
-
+// Define a type for the product input
+interface ProductInput {
+  productId: string;
+  quantity: number;
+}
 
 /**
  * POST /api/stocks
@@ -14,7 +17,7 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
     const body = await req.json();
-    const { products } = body;
+    const { products }: { products: ProductInput[] } = body;
 
     // Validate input
     if (!products || !Array.isArray(products) || products.length === 0) {
@@ -23,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     // Prepare products with default status
     const formattedProducts = await Promise.all(
-      products.map(async (product: any) => {
+      products.map(async (product: ProductInput) => {
         const exists = await Product.findById(product.productId);
         if (!exists) {
           throw new Error(`Invalid productId: ${product.productId}`);
@@ -43,9 +46,17 @@ export async function POST(req: NextRequest) {
       stockStatus: "not_received", // overall status
     });
 
-    return NextResponse.json({ success:true,message: "Stock created successfully", stock }, { status: 201 });
-  } catch (error: any) {
-    console.error("[STOCK_CREATE_ERROR]", error);
-    return NextResponse.json({ message: error.message || "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: true, message: "Stock created successfully", stock },
+      { status: 201 }
+    );
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("[STOCK_CREATE_ERROR]", error.message);
+      return NextResponse.json({ message: error.message || "Server error" }, { status: 500 });
+    } else {
+      console.error("[STOCK_CREATE_ERROR] Unknown error:", error);
+      return NextResponse.json({ message: "Unknown server error" }, { status: 500 });
+    }
   }
 }

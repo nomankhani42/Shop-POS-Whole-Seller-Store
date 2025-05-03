@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { X, Loader2, CheckCircle } from "lucide-react";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import FileUpload from "@/Components/FileUpload";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

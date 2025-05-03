@@ -30,7 +30,8 @@ const CategoriesPage: React.FC = () => {
       setError(null);
       const { data } = await axios.get("/api/category/get-category");
       setCategories(data.categories || []);
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error("Error fetching categories:", err); // Log the error for debugging
       setError("Failed to load categories.");
     } finally {
       setLoading(false);

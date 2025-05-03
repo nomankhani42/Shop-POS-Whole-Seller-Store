@@ -18,9 +18,6 @@ export const GET = async () => {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Extract shopkeeper ID from session
-    const shopkeeperId = session.user.id;
-
     // Get current date
     const today = new Date();
 
@@ -30,7 +27,6 @@ export const GET = async () => {
 
     // Fetch cash record for this shopkeeper
     const cashDoc = await Cash.findOne({});
-   
 
     // If no cash record exists, return default response
     if (!cashDoc) {
@@ -40,7 +36,6 @@ export const GET = async () => {
       });
     }
 
-    
     // Filter cash history entries from the last 30 days
     const recentHistory = cashDoc.cashCollectedHistory.filter((entry) => {
       const collectedDate = new Date(entry.collectedAt);
@@ -48,13 +43,17 @@ export const GET = async () => {
     });
 
     // Return available cash and filtered history
-   
     return NextResponse.json({
       availableCash: cashDoc.availableCash,
       cashCollectedHistory: recentHistory,
     });
-  } catch (error: any) {
-    // Handle server errors
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      // Handle known errors
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    } else {
+      // Handle unknown errors
+      return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
   }
 };

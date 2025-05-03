@@ -1,5 +1,5 @@
 import ImageKit from "imagekit";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export const imagekit = new ImageKit({
     publicKey: process.env.IMAGEKIT_PUBLIC_KEY as string,  // Ensure it's a string
@@ -7,11 +7,12 @@ export const imagekit = new ImageKit({
     urlEndpoint: process.env.IMAGEKIT_URL as string,
 });
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export async function GET(): Promise<NextResponse> {
     try {
         const authParams = imagekit.getAuthenticationParameters();
         return NextResponse.json(authParams);
-    } catch (error) {
+    } catch {
+        // Removed the unused 'error' variable
         return NextResponse.json({ error: "Failed to get authentication parameters" }, { status: 500 });
     }
 }

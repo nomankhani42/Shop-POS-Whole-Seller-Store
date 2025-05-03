@@ -64,9 +64,13 @@ export async function POST(req: Request) {
       sale: newSale,
       updatedCash: cashData,
     });
-
-  } catch (error: any) {
-    console.error("❌ Error in /api/sales/proceed:", error);
-    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("❌ Error in /api/sales/proceed:", error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    } else {
+      console.error("❌ Unknown error in /api/sales/proceed:", error);
+      return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
   }
 }

@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 // Function to generate Barcode Image as Buffer
 const generateBarcodeBuffer = async (sku: string): Promise<Buffer> => {
   const canvas = createCanvas(300, 100);
-  const ctx = canvas.getContext("2d");
+  
 
   JsBarcode(canvas, sku, { format: "CODE128", displayValue: true });
 

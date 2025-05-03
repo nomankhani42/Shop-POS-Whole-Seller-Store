@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import OwnerLayout from '@/Layout/owner/OwnerLayout';
-import { FaPlus } from 'react-icons/fa';
 import { ImSpinner2 } from 'react-icons/im';
 import FileUpload from '@/Components/FileUpload';
 import Image from 'next/image';
@@ -38,11 +37,10 @@ const AddProduct: React.FC = () => {
     minStock: 10,
     discount: 0,
     ownerNotes: '',
-    imageUrl: null, // Updated field name
+    imageUrl: null,
   });
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -66,7 +64,7 @@ const AddProduct: React.FC = () => {
   };
 
   const handleImageUploadSuccess = (response: { url: string }) => {
-    setProduct((prev) => ({ ...prev, imageUrl: response.url })); // Updated to imageUrl
+    setProduct((prev) => ({ ...prev, imageUrl: response.url }));
     setIsUploading(false);
   };
 
@@ -91,7 +89,7 @@ const AddProduct: React.FC = () => {
         minStock: 10,
         discount: 0,
         ownerNotes: '',
-        imageUrl: null, // Reset image URL
+        imageUrl: null,
       });
     } catch (error) {
       console.error('Error adding product:', error);
@@ -169,7 +167,7 @@ const AddProduct: React.FC = () => {
           {/* Image Upload Section */}
           <div className="col-span-2 w-[50%]">
             <label className="block text-lg font-medium text-gray-800">Upload Product Image</label>
-            <FileUpload fileName="product_image" onUploadProgress={setUploadProgress} onUploadStart={() => setIsUploading(true)} onSuccess={handleImageUploadSuccess} />
+            <FileUpload fileName="product_image" onUploadStart={() => setIsUploading(true)} onSuccess={handleImageUploadSuccess} />
 
             {isUploading && (
               <div className="mt-2 flex items-center">

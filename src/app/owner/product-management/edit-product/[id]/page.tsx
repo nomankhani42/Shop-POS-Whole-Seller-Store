@@ -164,7 +164,7 @@ const EditProduct = () => {
                     type={field.type || "text"}
                     name={field.name}
                     className="w-full px-4 py-2 mt-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-red-500"
-                    value={(form as any)[field.name]}
+                    value={form[field.name as keyof Product] || ""}
                     onChange={handleChange}
                   />
                 </div>
