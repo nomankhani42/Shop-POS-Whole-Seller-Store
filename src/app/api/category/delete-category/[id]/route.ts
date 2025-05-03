@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/DB";
 import CategoryModel from "@/models/category";
 
-export async function DELETE(req: Request, { params }: { params: { id?: string } }) {
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
   await dbConnect(); // ✅ Connect to MongoDB
 
   try {
