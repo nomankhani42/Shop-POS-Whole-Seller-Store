@@ -1,15 +1,17 @@
-import { NextResponse } from "next/server";
+// src/app/api/category/delete-category/[id]/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/DB";
 import CategoryModel from "@/models/category";
 
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   await dbConnect(); // ✅ Connect to MongoDB
 
   try {
-    const id = params?.id; // ✅ Extract category ID from URL params
+    const id = params?.id;
 
     if (!id) {
       return NextResponse.json(
@@ -18,7 +20,6 @@ export async function DELETE(
       );
     }
 
-    // ✅ Find and delete the category
     const deletedCategory = await CategoryModel.findByIdAndDelete(id);
 
     if (!deletedCategory) {
