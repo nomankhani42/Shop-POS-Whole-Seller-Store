@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { X, Loader2, CheckCircle } from "lucide-react";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import FileUpload from "@/Components/FileUpload";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,11 +12,6 @@ import Image from "next/image";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-}
-
-interface Category {
-  title: string;
-  img: string;
 }
 
 const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
@@ -57,8 +52,14 @@ const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
       setTitle("");
       setImageUrl(null);
       setUploadProgress(0);
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to add category");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        console.error("Axios error:", err.response?.data || err.message);
+        toast.error(err.response?.data?.message || "Failed to add category");
+      } else {
+        console.error("Unexpected error:", err);
+        toast.error("An unexpected error occurred.");
+      }
     } finally {
       setIsSubmitting(false);
     }
