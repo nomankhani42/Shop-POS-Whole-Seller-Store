@@ -1,6 +1,6 @@
 // src/models/Stock.ts (or .js if you're using JavaScript)
 
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, { Schema, Document, Types, model, models } from "mongoose";
 
 // Interface for a single product in the stock
 interface IStockProduct {
@@ -45,4 +45,4 @@ const StockSchema = new Schema<IStock>(
   { timestamps: true }
 );
 
-export default mongoose.model<IStock>("Stock", StockSchema);
+export default models.Stock || mongoose.model<IStock>("Stock", StockSchema);

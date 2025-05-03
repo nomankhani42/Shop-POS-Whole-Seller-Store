@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       stockStatus: "not_received", // overall status
     });
 
-    return NextResponse.json({ message: "Stock created successfully", stock }, { status: 201 });
+    return NextResponse.json({ success:true,message: "Stock created successfully", stock }, { status: 201 });
   } catch (error: any) {
     console.error("[STOCK_CREATE_ERROR]", error);
     return NextResponse.json({ message: error.message || "Server error" }, { status: 500 });

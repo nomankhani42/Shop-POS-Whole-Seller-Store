@@ -1,4 +1,4 @@
-import connectDB from "@/utils/db"; // MongoDB connection utility
+import dbConnect from "@/lib/DB";
 import Stock from "@/models/Stock";        // Stock model
 import { NextRequest, NextResponse } from "next/server";
 
@@ -11,11 +11,11 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function GET(req: NextRequest) {
   try {
-    await connectDB();
+    await dbConnect();
     // Fetch all stock documents and populate the productId field with actual product data
     const stocks = await Stock.find();
 
-    return NextResponse.json({ success:true,stocks,message:"Stocks Data Getted Successfully", }, { status: 200 });
+    return NextResponse.json({ success:true,stocks,message:"Stocks Data Getted Successfully" }, { status: 200 });
   } catch (error: any) {
     console.error("[GET_STOCKS_ERROR]", error);
     return NextResponse.json({ message: error.message || "Server error" }, { status: 500 });

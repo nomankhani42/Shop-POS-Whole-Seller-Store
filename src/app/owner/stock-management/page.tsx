@@ -6,7 +6,7 @@ import OwnerLayout from '@/Layout/owner/OwnerLayout';
 import { Plus, X, Trash2, Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-
+import { toast } from 'react-toastify';
 
 // Interfaces
 interface Product {
@@ -33,6 +33,7 @@ const StockPage = () => {
   const [addList, setAddList] = useState<{ id: string; quantity: number }[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [addStockLoading, setAddStockLoading] = useState<boolean>(false);
   const router = useRouter();
 
   // Fetch products
@@ -54,21 +55,25 @@ const StockPage = () => {
   };
 
   // Static stock history
-  const fetchStaticStockHistory = () => {
-    const staticHistory: StockHistoryItem[] = [
-      {
-        stockId: 'STK001',
-        date: new Date().toLocaleString(),
-        totalProducts: 2,
-        totalQuantities: 30,
-        status: 'Received',
-        products: [
-          { productId: 'p1', productName: 'Battery A', quantity: 10 },
-          { productId: 'p2', productName: 'Solar Panel B', quantity: 20 },
-        ],
-      },
-    ];
-    setStockHistory(staticHistory);
+  const fetchStaticStockHistory = async() => {
+    const res = await axios.get('/api/stock/get-complete-stock');
+    console.log(res.data); // Debugging line
+    if(res.data.success && Array.isArray(res.data.stocks)) {
+      const history = res.data.stocks.map((stock: any) => ({
+        stockId: stock._id,
+        date: new Date(stock.createdAt).toLocaleString(),
+        totalProducts: stock.products.length,
+        totalQuantities: stock.products.reduce((sum: number, product: any) => sum + product.quantity, 0),
+        status: stock.stockStatus,
+        products: stock.products.map((product: any) => ({
+          productId: product.productId,
+          productName: product.productName,
+          quantity: product.quantity,
+        })),
+      }));
+      setStockHistory(history);
+    }
+    
   };
 
   useEffect(() => {
@@ -76,7 +81,6 @@ const StockPage = () => {
     fetchStaticStockHistory();
   }, []);
 
-  // Stock filters
   const available = products.filter((p) => p.stock > 10);
   const lowStock = products.filter((p) => p.stock > 0 && p.stock <= 10);
   const outOfStock = products.filter((p) => p.stock === 0);
@@ -98,36 +102,36 @@ const StockPage = () => {
     setAddList((prev) => prev.filter((item) => item.id !== id));
   };
 
-  // Confirm add stock (static)
-  const handleConfirmAdd = () => {
-    const updatedProducts = products.map((product) => {
-      const match = addList.find((item) => item.id === product._id);
-      if (match) {
-        return { ...product, stock: product.stock + match.quantity };
-      }
-      return product;
-    });
+  const handleConfirmAdd = async () => {
+    if (addList.length === 0) {
+      toast.warn('Please add at least one product to the list.');
+      return;
+    }
 
-    const newEntry: StockHistoryItem = {
-      stockId: `STK${Date.now()}`,
-      date: new Date().toLocaleString(),
-      totalProducts: addList.length,
-      totalQuantities: addList.reduce((sum, item) => sum + item.quantity, 0),
-      status: 'Received',
-      products: addList.map((item) => {
-        const p = products.find((p) => p._id === item.id)!;
-        return {
+    try {
+      setAddStockLoading(true);
+      const result = await axios.post('/api/stock/add-stock', {
+        products: addList.map((item) => ({
           productId: item.id,
-          productName: p.name,
           quantity: item.quantity,
-        };
-      }),
-    };
-
-    setProducts(updatedProducts);
-    setStockHistory((prev) => [newEntry, ...prev]);
-    setAddList([]);
-    setIsAddModalOpen(false);
+        })),
+      });
+  //  console.log('Add stock result:', result.data); // Debugging line
+      if (result.data.success) {
+        toast.success('Stock added successfully!');
+        setAddStockLoading(false);
+        setAddList([]); // Clear the add list
+        fetchProducts(); // Refresh the product list
+        fetchStaticStockHistory();
+        setIsAddModalOpen(false); // Close the modal
+      } else {
+        toast.error('Failed to add stock.');
+        setAddStockLoading(false);
+      }
+    } catch (error) {
+    //   console.error('Error adding stock:', error);
+      toast.error('An error occurred while adding stock.');
+    }
   };
 
   return (
@@ -153,14 +157,15 @@ const StockPage = () => {
 
         {isAddModalOpen && (
           <AddStockModal
+          addStockLoading={addStockLoading}
+            isOpen={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
             products={products}
             addList={addList}
             onAddProduct={handleAddProductToList}
             onQuantityChange={handleQuantityChange}
             onRemoveProduct={handleRemoveFromList}
             onConfirm={handleConfirmAdd}
-            isOpen={()=>setIsAddModalOpen}
-            onClose={() => setIsAddModalOpen(false)}
           />
         )}
       </div>
@@ -170,12 +175,8 @@ const StockPage = () => {
 
 export default StockPage;
 
-/* Reuse components like Header, LoaderComponent, ErrorComponent, StockSection, StockHistorySection, AddStockModal from your previous implementation as-is */
+/* ---------------- Reusable Components ---------------- */
 
-
-/* Components */
-
-// Header Component
 const Header = ({ onAddStock }: { onAddStock: () => void }) => (
   <div className="flex justify-between items-center">
     <h1 className="text-3xl font-bold text-yellow-600">Stock Management</h1>
@@ -188,20 +189,25 @@ const Header = ({ onAddStock }: { onAddStock: () => void }) => (
   </div>
 );
 
-// Loader Component
 const LoaderComponent = () => (
-  <div className="col-span-full flex justify-center items-center py-12">
+  <div className="flex justify-center items-center py-12">
     <Loader className="w-8 h-8 text-yellow-500 animate-spin" />
   </div>
 );
 
-// Error Component
 const ErrorComponent = ({ error }: { error: string }) => (
   <p className="text-red-600">{error}</p>
 );
 
-// Stock Section Component
-const StockSection = ({ title, products, borderColor }: { title: string; products: Product[]; borderColor: string }) => (
+const StockSection = ({
+  title,
+  products,
+  borderColor,
+}: {
+  title: string;
+  products: Product[];
+  borderColor: string;
+}) => (
   <section className="space-y-4">
     <h2 className="text-xl font-semibold">{title}</h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -227,7 +233,6 @@ const StockSection = ({ title, products, borderColor }: { title: string; product
   </section>
 );
 
-// Stock History Section Component
 const StockHistorySection = ({
   stockHistory,
   onViewDetails,
@@ -257,11 +262,7 @@ const StockHistorySection = ({
                 <td className="border p-3">{entry.stockId}</td>
                 <td className="border p-3">{entry.totalProducts}</td>
                 <td className="border p-3">{entry.totalQuantities}</td>
-                <td
-                  className={`border p-3 font-semibold ${
-                    entry.status === 'Received' ? 'text-green-500' : 'text-red-500'
-                  }`}
-                >
+                <td className={`border p-3 font-semibold ${entry.status === 'Received' ? 'text-green-500' : 'text-red-500'}`}>
                   {entry.status}
                 </td>
                 <td className="border p-3 text-center">
@@ -286,6 +287,7 @@ const StockHistorySection = ({
 // Add Stock Modal Component
 const AddStockModal = ({
   isOpen,
+  addStockLoading,
   onClose,
   products,
   addList,
@@ -297,6 +299,7 @@ const AddStockModal = ({
   isOpen: boolean;
   onClose: () => void;
   products: Product[];
+  addStockLoading: boolean;
   addList: { id: string; quantity: number }[];
   onAddProduct: (id: string) => void;
   onQuantityChange: (id: string, quantity: number) => void;
@@ -368,68 +371,93 @@ const AddStockModal = ({
                     className="flex items-center gap-2 p-2 hover:bg-yellow-100 cursor-pointer rounded"
                   >
                     {product.image && (
-                      <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded" />
+                      <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
                     )}
-                    <div>
-                      <p className="font-semibold">{product.name}</p>
-                      <p className="text-xs text-gray-500">Stock: {product.stock}</p>
-                    </div>
+                    <span className="flex-1">{product.name}</span>
+                    {/* Display Available Stock in Dropdown */}
+                    <span className="text-sm text-gray-500">Stock: {product.stock}</span>
                   </div>
                 ))
               ) : (
-                <p className="text-center text-gray-400">No products found</p>
+                <p className="text-gray-500">No products found.</p>
               )}
             </div>
           )}
         </div>
 
-        {/* Selected Items */}
-        <div className="space-y-4">
+        {/* Selected products with quantity */}
+        <div className="mb-6 space-y-4">
           {addList.length > 0 ? (
             addList.map((item) => {
               const product = products.find((p) => p._id === item.id);
-              if (!product) return null;
               return (
-                <div key={item.id} className="flex items-center justify-between border rounded p-2 shadow-sm">
-                  <div className="flex items-center gap-3">
-                    {product.image && (
-                      <img src={product.image} alt={product.name} className="w-12 h-12 rounded object-cover" />
-                    )}
-                    <div>
-                      <p className="font-semibold">{product.name}</p>
+                product && (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between gap-4 border p-4 rounded shadow"
+                  >
+                    <div className="flex items-center gap-4">
+                      {product.image && (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="w-12 h-12 rounded object-cover"
+                        />
+                      )}
+                      <div>
+                        <h4 className="font-semibold">{product.name}</h4>
+                        <p className="text-sm text-gray-500">Stock: {product.stock}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button disabled={addStockLoading}
+                        onClick={() => onRemoveProduct(item.id)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                       <input
                         type="number"
-                        min={0}
+                        disabled={addStockLoading}
                         value={item.quantity}
-                        onChange={(e) => onQuantityChange(item.id, parseInt(e.target.value))}
-                        className="border mt-1 rounded px-2 py-1 w-24"
-                        placeholder="Quantity"
+                        onChange={(e) =>
+                          onQuantityChange(item.id, parseInt(e.target.value) || 0)
+                        }
+                        min="1"
+                        max={product.stock} // Ensure that the input doesn't exceed available stock
+                        className="w-16 text-center border p-2 rounded"
                       />
                     </div>
                   </div>
-                  <button
-                    onClick={() => onRemoveProduct(item.id)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <Trash2 />
-                  </button>
-                </div>
+                )
               );
             })
           ) : (
-            <p className="text-center text-gray-500">No products added yet.</p>
+            <p className="text-gray-500">No products added yet.</p>
           )}
         </div>
 
-        {/* Confirm Button */}
-        {addList.length > 0 && (
+        {/* Confirm button */}
+        <div className="mt-6 flex justify-center gap-4">
           <button
-            onClick={onConfirm}
-            className="mt-6 bg-green-600 hover:bg-green-700 w-full text-white py-2 rounded"
+            onClick={onClose}
+            className="bg-gray-300 text-gray-700 px-6 py-2 rounded"
           >
-            Confirm Add
+            Cancel
           </button>
-        )}
+          <button
+           disabled={addStockLoading}
+            onClick={onConfirm}
+            className="bg-yellow-600 text-white px-6 py-2 rounded hover:bg-yellow-700"
+          >
+            {addStockLoading ? (
+              <Loader className="w-8 h-8 animate-spin" />
+            ) : (
+              'Confirm Add'
+            )}
+          </button>
+        </div>
       </div>
     </motion.div>
   );
