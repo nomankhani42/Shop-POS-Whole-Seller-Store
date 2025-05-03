@@ -4,12 +4,12 @@ import CategoryModel from "@/models/category";
 
 export async function DELETE(
   req: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   await dbConnect(); // ✅ Connect to MongoDB
 
   try {
-    const id = context.params?.id; // ✅ Extract category ID from URL params
+    const id = params?.id; // ✅ Extract category ID from URL params
 
     if (!id) {
       return NextResponse.json(
