@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/DB';
 import User from '@/models/user';
 import ProductModel from '@/models/product';
-import { getToken } from 'next-auth/jwt';
+import { getToken } from 'next-auth/jwt'; // ✅ Ensure this is correctly imported
 
 export async function PUT(req: NextRequest) {
   await dbConnect();
 
-  const token = await getToken({ req });
+  const token = await getToken({ req }); // ✅ Use getToken to extract the token
   if (!token?.sub) {
     return NextResponse.json({ success: false, message: 'Unauthorized. Please log in.' }, { status: 401 });
   }
