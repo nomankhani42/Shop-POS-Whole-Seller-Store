@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/DB";
 import CategoryModel from "@/models/category";
 
-// Correct function signature for dynamic route handler in App Router
+// ✅ CORRECT signature for dynamic routes
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Record<string, string> }
+  { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   await dbConnect();
 
