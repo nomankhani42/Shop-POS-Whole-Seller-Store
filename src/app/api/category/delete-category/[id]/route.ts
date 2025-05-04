@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { NextApiRequestContext } from "next";
+
 import dbConnect from "@/lib/DB";
 import CategoryModel from "@/models/category";
 
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string } }
+  context: NextApiRequestContext
 ): Promise<NextResponse> {
   await dbConnect();
 
-  const id = context.params.id;
+  const id = context.params?.id;
 
   if (!id) {
     return NextResponse.json(
