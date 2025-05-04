@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import Product from "@/models/product";
 import dbConnect from "@/lib/DB";
+import type { RouteContext } from "next";
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: NextRequest,
+  context: RouteContext<{ id: string }>
+) {
   await dbConnect();
 
-  const productId = params.id;
+  const productId = context.params.id;
 
   try {
     const updatedData = await req.json();
@@ -20,7 +24,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ success: false, message: "Product not found." }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, message: "Product updated successfully.", product: updatedProduct });
+    return NextResponse.json({
+      success: true,
+      message: "Product updated successfully.",
+      product: updatedProduct,
+    });
   } catch (error) {
     console.error("Error updating product:", error);
     return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
