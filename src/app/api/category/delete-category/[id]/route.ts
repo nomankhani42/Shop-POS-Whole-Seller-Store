@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/DB";
 import CategoryModel from "@/models/category";
 
 export async function DELETE(
-  req: Request,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   await dbConnect();
@@ -32,7 +32,6 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }
