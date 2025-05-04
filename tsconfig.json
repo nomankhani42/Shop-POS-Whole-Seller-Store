@@ -18,10 +18,11 @@
         "name": "next"
       }
     ],
-    "types": ["next", "node"],  // Add this line
+    "types": ["next", "node","next-auth"],  // Add this line
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+   
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

@@ -30,6 +30,8 @@ const ProductCard: React.FC<Props> = ({ item, onAddToCart }) => {
         <Image
           src={item.image}
           alt={item.name}
+          height={100}
+          width={130}
           className="h-[100px] w-[130px] object-contain"
         />
       </div>

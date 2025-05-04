@@ -21,11 +21,11 @@ declare module 'next-auth' {
   }
 }
 
-declare module 'next-auth/jwt' {
+declare module "next-auth/jwt" {
   interface JWT {
     id: string;
+    role: "owner" | "shopkeeper";
     username: string;
-    role: 'owner' | 'shopkeeper';
     storeName: string;
   }
 }
