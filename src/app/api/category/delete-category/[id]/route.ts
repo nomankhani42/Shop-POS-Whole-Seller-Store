@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/DB";
 import CategoryModel from "@/models/category";
 
-export const DELETE=async(
+export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
-): Promise<NextResponse>=> {
+): Promise<NextResponse> {
   await dbConnect();
 
   const id = params.id;
