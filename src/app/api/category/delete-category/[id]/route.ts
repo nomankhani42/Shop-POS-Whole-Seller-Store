@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/DB";
-import ProductModel from "@/models/product"; // make sure to import the correct model
+import CategoryModel from "@/models/category";
 
+// Correct function signature for dynamic route handler in App Router
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Record<string, string> }
 ): Promise<NextResponse> {
   await dbConnect();
 
@@ -12,27 +13,27 @@ export async function DELETE(
 
   if (!id) {
     return NextResponse.json(
-      { success: false, message: "Product ID is required" },
+      { success: false, message: "Category ID is required" },
       { status: 400 }
     );
   }
 
   try {
-    const deletedProduct = await ProductModel.findByIdAndDelete(id);
+    const deletedCategory = await CategoryModel.findByIdAndDelete(id);
 
-    if (!deletedProduct) {
+    if (!deletedCategory) {
       return NextResponse.json(
-        { success: false, message: "Product not found" },
+        { success: false, message: "Category not found" },
         { status: 404 }
       );
     }
 
     return NextResponse.json(
-      { success: true, message: "Product deleted successfully" },
+      { success: true, message: "Category deleted successfully" },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error deleting product:", error);
+    console.error("Error deleting category:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }
