@@ -1,40 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { NextApiRequestContext } from "next";
-
 import dbConnect from "@/lib/DB";
-import CategoryModel from "@/models/category";
+import ProductModel from "@/models/product"; // make sure to import the correct model
 
 export async function DELETE(
   req: NextRequest,
-  context: NextApiRequestContext
+  { params }: { params: { id: string } }
 ): Promise<NextResponse> {
   await dbConnect();
 
-  const id = context.params?.id;
+  const id = params.id;
 
   if (!id) {
     return NextResponse.json(
-      { success: false, message: "Category ID is required" },
+      { success: false, message: "Product ID is required" },
       { status: 400 }
     );
   }
 
   try {
-    const deletedCategory = await CategoryModel.findByIdAndDelete(id);
+    const deletedProduct = await ProductModel.findByIdAndDelete(id);
 
-    if (!deletedCategory) {
+    if (!deletedProduct) {
       return NextResponse.json(
-        { success: false, message: "Category not found" },
+        { success: false, message: "Product not found" },
         { status: 404 }
       );
     }
 
     return NextResponse.json(
-      { success: true, message: "Category deleted successfully" },
+      { success: true, message: "Product deleted successfully" },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error deleting category:", error);
+    console.error("Error deleting product:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }
