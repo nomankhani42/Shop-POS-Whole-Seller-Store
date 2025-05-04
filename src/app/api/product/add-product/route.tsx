@@ -3,8 +3,15 @@ import Product from "@/models/product";
 import QRCode from "qrcode";
 import { createCanvas } from "canvas";
 import JsBarcode from "jsbarcode";
-import { imagekit } from "../../file/route";
 import dbConnect from "@/lib/DB";
+import ImageKit from "imagekit";
+
+
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY as string, // Ensure it's a string
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY as string,
+  urlEndpoint: process.env.IMAGEKIT_URL as string,
+});
 
 // Handle Product Creation (POST)
 export async function POST(req: NextRequest) {
