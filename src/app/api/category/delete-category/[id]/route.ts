@@ -5,7 +5,7 @@ import CategoryModel from "@/models/category";
 export const DELETE=async(
   req: NextRequest,
   { params }: { params: { id: string } }
-): Promise<NextResponse> {
+): Promise<NextResponse>=> {
   await dbConnect();
 
   const id = params.id;
@@ -32,6 +32,7 @@ export const DELETE=async(
       { status: 200 }
     );
   } catch (error) {
+    console.error("Error deleting category:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }
