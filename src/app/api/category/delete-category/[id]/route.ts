@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/DB";
 import CategoryModel from "@/models/category";
 
-// ✅ CORRECT signature for dynamic routes
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-): Promise<NextResponse> {
+interface Params {
+  params: {
+    id: string;
+  };
+}
+
+export async function DELETE(req: NextRequest, { params }: Params) {
   await dbConnect();
 
   const id = params.id;
