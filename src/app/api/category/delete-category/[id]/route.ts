@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { RouteHandlerContext } from "next/dist/server/web/types"; // ✅ CORRECT TYPE
+
 import dbConnect from "@/lib/DB";
 import CategoryModel from "@/models/category";
 
-interface Params {
-  params: {
-    id: string;
-  };
-}
-
-export async function DELETE(req: NextRequest, { params }: Params) {
+export async function DELETE(
+  req: NextRequest,
+  context: RouteHandlerContext
+) {
   await dbConnect();
 
-  const id = params.id;
+  const id = context.params?.id;
 
   if (!id) {
     return NextResponse.json(
