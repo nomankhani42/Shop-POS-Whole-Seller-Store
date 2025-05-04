@@ -5,7 +5,7 @@ import { FiShoppingCart, FiMinus, FiPlus, FiTrash2, FiX } from 'react-icons/fi';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useSession } from 'next-auth/react';
+
 
 interface CartItem {
   id: string;
@@ -43,7 +43,7 @@ const Cart: React.FC<CartProps> = ({
   increase_Quanitity,
   decrease_Quanitity,
 }) => {
-  const { data: session } = useSession();
+  
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customerName, setCustomerName] = useState<string>('');
   const [customerPhone, setCustomerPhone] = useState<string>('');
@@ -94,16 +94,12 @@ const Cart: React.FC<CartProps> = ({
       return;
     }
 
-    const userId = session?.user?.id;
-    if (!userId) {
-      toast.error("⚠️ Unable to identify the user. Please login again.");
-      return;
-    }
+    
 
     try {
       setCheckoutLoading(true);
       const response = await axios.post("/api/check-out", {
-        userId, // Send user ID to backend
+        
         customerName,
         customerPhone,
         products: cart.map((item) => ({
