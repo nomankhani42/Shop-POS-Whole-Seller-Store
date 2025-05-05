@@ -14,12 +14,8 @@ export async function PUT(req: NextRequest) {
   await dbConnect();
 
   const token = await getToken({ req });
-
   if (!token?.sub) {
-    return NextResponse.json(
-      { success: false, message: 'Unauthorized. Please log in.' },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, message: 'Unauthorized. Please log in.' }, { status: 401 });
   }
 
   const { product_id } = await req.json();
@@ -30,10 +26,7 @@ export async function PUT(req: NextRequest) {
   }
 
   if (user.role !== 'shopkeeper') {
-    return NextResponse.json(
-      { success: false, message: 'Only shopkeepers can update cart.' },
-      { status: 403 }
-    );
+    return NextResponse.json({ success: false, message: 'Only shopkeepers can update cart.' }, { status: 403 });
   }
 
   const product = await ProductModel.findById(product_id);
@@ -42,14 +35,11 @@ export async function PUT(req: NextRequest) {
   }
 
   if (product.stock < 1) {
-    return NextResponse.json(
-      { success: false, message: 'No more stock available for this product.' },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: false, message: 'No more stock available for this product.' }, { status: 400 });
   }
 
-  const existingCartItemIndex = user.cart.findIndex(
-    (item: CartItem) => item.productId.equals(product._id)
+  const existingCartItemIndex = user.cart.findIndex((item: CartItem) =>
+    item.productId.equals(product._id)
   );
 
   if (existingCartItemIndex === -1) {
