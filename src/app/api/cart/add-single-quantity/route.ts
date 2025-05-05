@@ -2,14 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/DB';
 import User from '@/models/user';
 import ProductModel from '@/models/product';
-import { getToken } from 'next-auth/jwt'; // ✅ Correct named import
+import { getToken } from 'next-auth/jwt';
+import mongoose from 'mongoose';
+
+interface CartItem {
+  productId: mongoose.Types.ObjectId;
+  quantity: number;
+}
 
 export async function PUT(req: NextRequest) {
   await dbConnect();
 
-  const token = await getToken({ req }); // ✅ Use getToken to extract the token
+  const token = await getToken({ req });
+
   if (!token?.sub) {
-    return NextResponse.json({ success: false, message: 'Unauthorized. Please log in.' }, { status: 401 });
+    return NextResponse.json(
+      { success: false, message: 'Unauthorized. Please log in.' },
+      { status: 401 }
+    );
   }
 
   const { product_id } = await req.json();
@@ -20,7 +30,10 @@ export async function PUT(req: NextRequest) {
   }
 
   if (user.role !== 'shopkeeper') {
-    return NextResponse.json({ success: false, message: 'Only shopkeepers can update cart.' }, { status: 403 });
+    return NextResponse.json(
+      { success: false, message: 'Only shopkeepers can update cart.' },
+      { status: 403 }
+    );
   }
 
   const product = await ProductModel.findById(product_id);
@@ -29,17 +42,22 @@ export async function PUT(req: NextRequest) {
   }
 
   if (product.stock < 1) {
-    return NextResponse.json({ success: false, message: 'No more stock available for this product.' }, { status: 400 });
+    return NextResponse.json(
+      { success: false, message: 'No more stock available for this product.' },
+      { status: 400 }
+    );
   }
 
-  const cartItemIndex = user.cart.findIndex(item => item.productId.equals(product._id));
+  const existingCartItemIndex = user.cart.findIndex(
+    (item: CartItem) => item.productId.equals(product._id)
+  );
 
-  if (cartItemIndex === -1) {
+  if (existingCartItemIndex === -1) {
     return NextResponse.json({ success: false, message: 'Product not found in cart.' }, { status: 404 });
   }
 
   // ✅ Increase quantity in cart
-  user.cart[cartItemIndex].quantity += 1;
+  user.cart[existingCartItemIndex].quantity += 1;
 
   // ✅ Decrease stock
   product.stock -= 1;
@@ -47,9 +65,12 @@ export async function PUT(req: NextRequest) {
   await user.save();
   await product.save();
 
-  return NextResponse.json({
-    success: true,
-    message: 'Product quantity increased in cart.',
-    cart: user.cart,
-  }, { status: 200 });
+  return NextResponse.json(
+    {
+      success: true,
+      message: 'Product quantity increased in cart.',
+      cart: user.cart,
+    },
+    { status: 200 }
+  );
 }

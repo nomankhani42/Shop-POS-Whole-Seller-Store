@@ -1,5 +1,5 @@
-// types/next-auth.d.ts (or anywhere in your project with proper module resolution)
-
+// types/next-auth.d.ts
+// import NextAuth from 'next-auth';
 
 declare module 'next-auth' {
   interface Session {
@@ -21,11 +21,12 @@ declare module 'next-auth' {
   }
 }
 
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string;
-    role: "owner" | "shopkeeper";
-    username: string;
-    storeName: string;
-  }
-}
+// ❌ REMOVE this part:
+// declare module "next-auth/jwt" {
+//   interface JWT {
+//     id: string;
+//     role: "owner" | "shopkeeper";
+//     username: string;
+//     storeName: string;
+//   }
+// }
