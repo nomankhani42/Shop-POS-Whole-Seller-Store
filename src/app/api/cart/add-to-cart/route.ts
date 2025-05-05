@@ -4,6 +4,14 @@ import User from '@/models/user';
 import ProductModel from '@/models/product';
 import { getToken } from 'next-auth/jwt';
 import { NextRequest } from 'next/server';
+import mongoose from 'mongoose';
+
+interface CartItem {
+  productId: mongoose.Types.ObjectId;
+  quantity: number;
+  name: string;
+  price: number;
+}
 
 export async function POST(req: NextRequest) {
   await dbConnect();
@@ -60,7 +68,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Check if product already exists in user's cart
-  const existingCartItemIndex = user.cart.findIndex((item) =>
+  const existingCartItemIndex = user.cart.findIndex((item: CartItem) =>
     item.productId.equals(product._id)
   );
 

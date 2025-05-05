@@ -4,6 +4,13 @@ import User from '@/models/user';
 import ProductModel from '@/models/product';
 import { getToken } from 'next-auth/jwt';
 import { NextRequest } from 'next/server';
+import mongoose from 'mongoose';
+interface CartItem {
+  productId: mongoose.Types.ObjectId;
+  quantity: number;
+  name: string;
+  price: number;
+}
 
 export async function DELETE(req: NextRequest) {
   await dbConnect();
@@ -37,7 +44,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   // Find the index of the product in the cart
-  const cartItemIndex = user.cart.findIndex((item) =>
+  const cartItemIndex = user.cart.findIndex((item:CartItem) =>
     item.productId.equals(product_id)
   );
 

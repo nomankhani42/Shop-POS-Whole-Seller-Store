@@ -3,6 +3,14 @@ import dbConnect from '@/lib/DB';
 import User from '@/models/user';
 import ProductModel from '@/models/product';
 import { getToken } from 'next-auth/jwt';
+import mongoose from 'mongoose';
+
+interface CartItem {
+  productId: mongoose.Types.ObjectId;
+  quantity: number;
+  name: string;
+  price: number;
+}
 
 export async function PUT(req: NextRequest) {
   await dbConnect();
@@ -28,7 +36,9 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ success: false, message: 'Product not found.' }, { status: 404 });
   }
 
-  const cartItemIndex = user.cart.findIndex(item => item.productId.equals(product._id));
+  const cartItemIndex = user.cart.findIndex((item: CartItem) =>
+    item.productId.equals(product._id)
+  );
 
   if (cartItemIndex === -1) {
     return NextResponse.json({ success: false, message: 'Product not in cart.' }, { status: 404 });
@@ -50,9 +60,12 @@ export async function PUT(req: NextRequest) {
   await user.save();
   await product.save();
 
-  return NextResponse.json({
-    success: true,
-    message: 'Product quantity decreased in cart.',
-    cart: user.cart,
-  }, { status: 200 });
+  return NextResponse.json(
+    {
+      success: true,
+      message: 'Product quantity decreased in cart.',
+      cart: user.cart,
+    },
+    { status: 200 }
+  );
 }
