@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 import React from 'react';
 
 export type ProductType = {
@@ -27,11 +26,9 @@ const ProductCard: React.FC<Props> = ({ item, onAddToCart }) => {
     <div className="w-[220px] bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-xl transition-all duration-200">
       {/* Product Image */}
       <div className="bg-yellow-100 p-1 rounded-t-lg flex justify-center items-center">
-        <Image
+        <img
           src={item.image}
           alt={item.name}
-          height={100}
-          width={130}
           className="h-[100px] w-[130px] object-contain"
         />
       </div>

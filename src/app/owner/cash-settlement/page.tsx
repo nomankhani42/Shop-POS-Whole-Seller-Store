@@ -4,20 +4,14 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import OwnerLayout from "@/Layout/owner/OwnerLayout";
+// import Spinner from "@/components/Spinner"; // Uncomment this if you have a custom spinner
 
 interface CashEntry {
   id: string;
   date: string;
   received: number;
   settled: number;
-  status: "Received" | "Pending" | "Not Received";
-}
-
-interface CashCollectedHistoryEntry {
-  _id: string;
-  collectedAt: string;
-  cashAmount: number;
-  status: "Received" | "Pending" | "Not Received";
+  status: "Received" | "Pending" | "Not Received" | string;
 }
 
 const CashSettlementOwner = () => {
@@ -31,7 +25,7 @@ const CashSettlementOwner = () => {
       setAvailableCash(data.availableCash);
 
       const formattedHistory: CashEntry[] = data.cashCollectedHistory.map(
-        (entry: CashCollectedHistoryEntry) => ({
+        (entry: any) => ({
           id: entry._id,
           date: new Date(entry.collectedAt).toISOString().split("T")[0],
           received: entry.status === "Received" ? entry.cashAmount : 0,
@@ -41,8 +35,7 @@ const CashSettlementOwner = () => {
       );
 
       setCashHistory(formattedHistory);
-    } catch (error: unknown) {
-      console.error("Error fetching cash data:", error); // Log the error for debugging
+    } catch (error) {
       toast.error("Failed to load cash data.");
     }
   };
@@ -58,8 +51,7 @@ const CashSettlementOwner = () => {
       } else {
         toast.error(response.data.message);
       }
-    } catch (error: unknown) {
-      console.error("Error updating cash status:", error); // Log the error for debugging
+    } catch (error) {
       toast.error("Something went wrong.");
     } finally {
       setLoadingRow(null); // Clear loading state
@@ -122,6 +114,7 @@ const CashSettlementOwner = () => {
                     <td className="border p-3">
                       {entry.status === "Pending" ? (
                         loadingRow === entry.id ? (
+                          // You can replace below with <Spinner /> if you have one
                           <div className="flex justify-center">
                             <div className="w-5 h-5 border-2 border-gray-200 border-t-blue-500 animate-spin rounded-full"></div>
                           </div>

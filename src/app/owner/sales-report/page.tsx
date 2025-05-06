@@ -16,49 +16,19 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import axios from "axios";
 import OwnerLayout from "@/Layout/owner/OwnerLayout";
-import { Loader } from "lucide-react";
+import { Loader } from "lucide-react"; // Import Lucide React Loader
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#E63946"];
 
-// Define types
-interface Product {
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-interface Transaction {
-  _id: string;
-  customerName: string;
-  customerPhone: string;
-  createdAt: string;
-  products: Product[];
-}
-
-interface SalesData {
-  todaySales: number;
-  weeklySales: number;
-  monthlySales: number;
-  mostSoldProducts: { name: string; quantitySold: number }[];
-  allTransactions: Transaction[];
-}
-
-// Extend jsPDF to include the autoTable plugin's properties
-interface jsPDFWithAutoTable extends jsPDF {
-  lastAutoTable?: {
-    finalY: number;
-  };
-}
-
 const SalesHistory = () => {
-  const [salesData, setSalesData] = useState<SalesData | null>(null); // Properly typed
+  const [salesData, setSalesData] = useState<any>(null); // Will store full API data
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSales = async () => {
       try {
         const res = await axios.get("/api/sales/get-complete-record");
-        setSalesData(res.data); // Store all transactions and stats
+        setSalesData(res.data); // store all transactions and stats
       } catch (err) {
         console.error("Failed to fetch sales data:", err);
       } finally {
@@ -87,8 +57,8 @@ const SalesHistory = () => {
     { name: "Monthly", sales: monthlySales },
   ];
 
-  const generatePDF = (sale: Transaction) => {
-    const doc = new jsPDF() as jsPDFWithAutoTable;
+  const generatePDF = (sale: (typeof allTransactions)[0]) => {
+    const doc = new jsPDF();
     doc.setFontSize(12);
     doc.text("Invoice", 90, 10);
     doc.text(`Sale ID: ${sale._id}`, 10, 20);
@@ -96,7 +66,7 @@ const SalesHistory = () => {
     doc.text(`Phone: ${sale.customerPhone || "N/A"}`, 10, 36);
     doc.text(`Date: ${new Date(sale.createdAt).toLocaleString()}`, 10, 44);
 
-    const tableData = sale.products.map((item, index) => [
+    const tableData = sale.products.map((item: any, index: number) => [
       index + 1,
       item.name,
       item.quantity,
@@ -112,11 +82,11 @@ const SalesHistory = () => {
     });
 
     const total = sale.products.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+      (sum: number, item: any) => sum + item.price * item.quantity,
       0
     );
 
-    const finalY = doc.lastAutoTable?.finalY || 70; // Use the extended type
+    const finalY = (doc as any).lastAutoTable.finalY || 70;
     doc.text(`Total: Rs. ${total}`, 140, finalY + 10);
     doc.save(`Invoice_${sale.customerName}_${sale._id}.pdf`);
   };
@@ -129,7 +99,7 @@ const SalesHistory = () => {
         {/* Sales Overview */}
         <div className="grid grid-cols-3 gap-6 mb-6">
           <div className="bg-blue-500 text-white p-5 rounded-lg shadow-lg">
-            <h3 className="text-lg font-semibold">Today&apos;s Sales</h3>
+            <h3 className="text-lg font-semibold">Today's Sales</h3>
             <p className="text-2xl font-bold mt-2">Rs. {todaySales}</p>
           </div>
           <div className="bg-green-500 text-white p-5 rounded-lg shadow-lg">
@@ -195,9 +165,9 @@ const SalesHistory = () => {
               </tr>
             </thead>
             <tbody>
-              {allTransactions.map((sale) => {
+              {allTransactions.map((sale: any) => {
                 const total = sale.products.reduce(
-                  (sum, item) => sum + item.price * item.quantity,
+                  (sum: number, item: any) => sum + item.price * item.quantity,
                   0
                 );
                 return (

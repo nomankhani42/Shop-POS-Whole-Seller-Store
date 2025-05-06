@@ -1,7 +1,7 @@
 "use client"; // Ensure this runs only on the client side
 
 import React from "react";
-import { ImageKitProvider } from "imagekitio-next";
+import { ImageKitProvider, IKImage } from "imagekitio-next";
 
 const urlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL as string;
 const publicKey = process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY as string;
@@ -21,12 +21,8 @@ const authenticator = async () => {
       expire: data.expire,
       token: data.token,
     };
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new Error(`Authentication request failed: ${error.message}`);
-    } else {
-      throw new Error("Authentication request failed: Unknown error");
-    }
+  } catch (error: any) {
+    throw new Error(`Authentication request failed: ${error.message}`);
   }
 };
 

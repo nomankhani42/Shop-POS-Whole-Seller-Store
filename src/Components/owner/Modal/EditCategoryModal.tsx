@@ -7,7 +7,6 @@ import axios from "axios";
 import FileUpload from "@/Components/FileUpload";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Image from "next/image";
 
 interface EditCategoryModalProps {
   isOpen: boolean;
@@ -81,17 +80,14 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      await axios.put(`/api/category/update-category/${category._id}`, updatedData);
+      await axios.put(`/api/category/update-category/${category._id}`, {
+        title,
+        img: imageUrl
+      });
       toast.success("Category updated successfully!");
       onClose();
-    } catch (err: unknown) {
-      // Narrow down the error type
-      if (axios.isAxiosError(err)) {
-        toast.error(err.response?.data?.message || "Failed to update category");
-      } else {
-        console.error("Unexpected error:", err);
-        toast.error("An unexpected error occurred.");
-      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to update category");
     } finally {
       setIsSubmitting(false);
     }
@@ -168,13 +164,10 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                 transition={{ duration: 0.3 }}
                 className="relative w-full h-full flex items-center justify-center"
               >
-                <Image
-                layout="responsive" // Makes the image responsive
-                 height={100} // Aspect ratio height
-                 width={100} // Aspect ratio width
+                <img
                   src={imageUrl}
                   alt="Preview"
-                  className=" object-contain"
+                  className="max-h-full max-w-full object-contain"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                   <CheckCircle className="text-green-500 w-10 h-10" />

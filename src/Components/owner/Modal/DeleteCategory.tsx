@@ -28,7 +28,6 @@ const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
       onCategoryDeleted(); // Refresh category list after deletion
       onClose(); // Close the modal
     } catch (error) {
-      console.error("Error deleting category:", error); // Log the error for debugging
       toast.error("Failed to delete category. Please try again.");
     } finally {
       setLoading(false);

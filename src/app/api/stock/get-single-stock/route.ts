@@ -14,20 +14,15 @@ export async function GET(req: NextRequest) {
     }
 
     // Fetch the stock entry by ID
-    const stock = await Stock.findById(id).populate("products.productId"); // Populate the productId field with actual product data
+    const stock = await Stock.findById(id).populate("products.productId");// Populate the productId field with actual product data
 
     if (!stock) {
       return NextResponse.json({ success: false, message: "Stock not found" }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, stock, message: "Stock Data Retrieved Successfully" }, { status: 200 });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("[GET_STOCK_ERROR]", error.message);
-      return NextResponse.json({ success: false, message: error.message || "Server error" }, { status: 500 });
-    } else {
-      console.error("[GET_STOCK_ERROR] Unknown error:", error);
-      return NextResponse.json({ success: false, message: "Unknown server error" }, { status: 500 });
-    }
+  } catch (error: any) {
+    console.error("[GET_STOCK_ERROR]", error);
+    return NextResponse.json({ success: false, message: error.message || "Server error" }, { status: 500 });
   }
 }

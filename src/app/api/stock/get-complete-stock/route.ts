@@ -1,34 +1,23 @@
 import dbConnect from "@/lib/DB";
-import Stock from "@/models/Stock"; // Stock model
-import { NextResponse } from "next/server";
+import Stock from "@/models/Stock";        // Stock model
+import { NextRequest, NextResponse } from "next/server";
+
+// Connect to MongoDB before handling the request
+
 
 /**
  * GET /api/stocks
  * Fetch all stock entries with populated product data
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     await dbConnect();
-    // Fetch all stock documents
+    // Fetch all stock documents and populate the productId field with actual product data
     const stocks = await Stock.find();
 
-    return NextResponse.json(
-      { success: true, stocks, message: "Stocks Data Retrieved Successfully" },
-      { status: 200 }
-    );
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("[GET_STOCKS_ERROR]", error.message);
-      return NextResponse.json(
-        { success: false, message: error.message || "Server error" },
-        { status: 500 }
-      );
-    } else {
-      console.error("[GET_STOCKS_ERROR] Unknown error:", error);
-      return NextResponse.json(
-        { success: false, message: "Unknown server error" },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json({ success:true,stocks,message:"Stocks Data Getted Successfully" }, { status: 200 });
+  } catch (error: any) {
+    console.error("[GET_STOCKS_ERROR]", error);
+    return NextResponse.json({ message: error.message || "Server error" }, { status: 500 });
   }
 }

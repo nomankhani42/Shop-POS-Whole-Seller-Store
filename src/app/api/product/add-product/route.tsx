@@ -3,15 +3,8 @@ import Product from "@/models/product";
 import QRCode from "qrcode";
 import { createCanvas } from "canvas";
 import JsBarcode from "jsbarcode";
+import { imagekit } from "../../file/route";
 import dbConnect from "@/lib/DB";
-import ImageKit from "imagekit";
-
-
-const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY as string, // Ensure it's a string
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY as string,
-  urlEndpoint: process.env.IMAGEKIT_URL as string,
-});
 
 // Handle Product Creation (POST)
 export async function POST(req: NextRequest) {
@@ -79,7 +72,7 @@ export async function POST(req: NextRequest) {
 // Function to generate Barcode Image as Buffer
 const generateBarcodeBuffer = async (sku: string): Promise<Buffer> => {
   const canvas = createCanvas(300, 100);
-  
+  const ctx = canvas.getContext("2d");
 
   JsBarcode(canvas, sku, { format: "CODE128", displayValue: true });
 

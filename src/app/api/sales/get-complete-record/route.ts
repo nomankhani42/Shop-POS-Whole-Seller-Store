@@ -1,4 +1,4 @@
-import {  NextResponse } from "next/server"; // Import Next.js API types
+import { NextRequest, NextResponse } from "next/server"; // Import Next.js API types
 import dbConnect from "@/lib/DB"; // Custom DB connection utility
 import SalesTransaction from "@/models/SaleTransication"
 import {
@@ -10,7 +10,7 @@ import {
   endOfMonth,
 } from "date-fns"; // Utility functions to calculate start/end of day/week/month
 
-export const GET = async () => {
+export const GET = async (req: NextRequest) => {
   try {
     await dbConnect(); // Connect to MongoDB
 

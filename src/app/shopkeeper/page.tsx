@@ -133,16 +133,12 @@ const Page: React.FC = () => {
       await axios.put('/api/cart/add-single-quantity', { product_id: productId });
       setCartUpdateTrigger(prev => !prev);
       await getProductsData();
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.message;
-        if (errorMessage) {
-          toast.warning("🚫 No more quantity available for this product");
-        } else {
-          console.error("Error increasing quantity:", error.message);
-        }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message;
+      if (errorMessage) {
+        toast.warning("🚫 No more quantity available for this product");
       } else {
-        console.error("Unknown error:", error);
+        console.error("Error increasing quantity", error);
       }
     } finally {
       setDisabledQuantityId(null);
@@ -214,7 +210,7 @@ const Page: React.FC = () => {
                           : 'border-transparent hover:border-red-400'
                         }`}
                     >
-                      <Image src={item.img} height={56} width={56} alt={item.title} className=" object-contain mx-auto" />
+                      <img src={item.img} alt={item.title} className="w-16 h-16 object-contain mx-auto" />
                       <p className="text-sm mt-1">{item.title}</p>
                     </SwiperSlide>
                   ))}

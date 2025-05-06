@@ -1,16 +1,11 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/DB";
 import Product from "@/models/product";
-import type { NextRequest } from "next/server";
-import type { RouteContext } from "next";
 
-export async function GET(
-  req: NextRequest,
-  context: RouteContext<{ id: string }>
-) {
+export const GET = async (req: Request, { params }: { params: { id: string } }) => {
   try {
     await dbConnect();
-    const { id } = context.params;
+    const { id } = params;
 
     if (!id) {
       return NextResponse.json({ success: false, message: "Product ID is required" }, { status: 400 });
@@ -26,4 +21,4 @@ export async function GET(
     console.error("Error fetching product:", error);
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
   }
-}
+};

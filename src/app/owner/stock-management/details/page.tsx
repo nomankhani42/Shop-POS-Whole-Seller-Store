@@ -8,32 +8,8 @@ import Image from "next/image";
 import { format } from "date-fns";
 import { Loader } from "lucide-react";
 
-// Define types
-interface Product {
-  _id: string;
-  name: string;
-  brand: string;
-  sku: string;
-  image: string;
-  barcode: string;
-  qrCodeUrl: string;
-}
-
-interface ProductItem {
-  productId: Product;
-  quantity: number;
-  status: string;
-}
-
-interface StockData {
-  _id: string;
-  createdAt: string;
-  stockStatus: string;
-  products: ProductItem[];
-}
-
 const StockDetailsPage = () => {
-  const [stockData, setStockData] = useState<StockData | null>(null); // Properly typed
+  const [stockData, setStockData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
@@ -68,7 +44,7 @@ const StockDetailsPage = () => {
 
         {loading ? (
           <div className="flex items-center justify-center h-[80vh]">
-            <Loader className="animate-spin text-yellow-500" size={40} />
+                   <Loader className="animate-spin text-yellow-500" size={40} />
           </div>
         ) : error ? (
           <p className="text-red-500">{error}</p>
@@ -78,20 +54,14 @@ const StockDetailsPage = () => {
             <div className="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-800 mb-1">
-                    Stock ID: <span className="text-gray-600">{stockData._id}</span>
-                  </h2>
+                  <h2 className="text-xl font-semibold text-gray-800 mb-1">Stock ID: <span className="text-gray-600">{stockData._id}</span></h2>
                   <p className="text-sm text-gray-500">
                     Created At: {format(new Date(stockData.createdAt), "dd MMM yyyy hh:mm a")}
                   </p>
                 </div>
                 <div className="text-sm text-gray-700">
-                  <p>
-                    Status: <span className="capitalize font-medium">{stockData.stockStatus}</span>
-                  </p>
-                  <p>
-                    Total Products: <span className="font-medium">{stockData.products?.length}</span>
-                  </p>
+                  <p>Status: <span className="capitalize font-medium">{stockData.stockStatus}</span></p>
+                  <p>Total Products: <span className="font-medium">{stockData.products?.length}</span></p>
                 </div>
               </div>
             </div>
@@ -112,7 +82,7 @@ const StockDetailsPage = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                  {stockData.products.map((productItem, index) => {
+                  {stockData.products.map((productItem: any, index: number) => {
                     const product = productItem.productId;
                     return (
                       <tr key={product._id || index} className="hover:bg-gray-50 transition">

@@ -7,7 +7,6 @@ import { Plus, X, Trash2, Loader } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
-import Image from 'next/image';
 
 // Interfaces
 interface Product {
@@ -16,17 +15,6 @@ interface Product {
   stock: number;
   sellingPrice: number;
   image?: string;
-}
-
-interface Stock {
-  _id: string;
-  createdAt: string;
-  stockStatus: 'Received' | 'Pending';
-  products: {
-    productId: string;
-    productName: string;
-    quantity: number;
-  }[];
 }
 
 interface StockHistoryItem {
@@ -60,44 +48,59 @@ const StockPage = () => {
         setError('Failed to fetch products: Invalid response structure.');
       }
     } catch (err) {
-      console.error('Error fetching products:', err); // Log the error for debugging
       setError('Error fetching products.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch stock history
-  const fetchStaticStockHistory = async () => {
-    try {
-      const res = await axios.get('/api/stock/get-complete-stock');
-      if (res.data.success && Array.isArray(res.data.stocks)) {
-        const history = res.data.stocks.map((stock: Stock) => ({
-          stockId: stock._id,
-          date: new Date(stock.createdAt).toLocaleString(),
-          totalProducts: stock.products.length,
-          totalQuantities: stock.products.reduce(
-            (sum: number, product) => sum + product.quantity,
-            0
-          ),
-          status: stock.stockStatus,
-          products: stock.products.map((product) => ({
-            productId: product.productId,
-            productName: product.productName,
-            quantity: product.quantity,
-          })),
-        }));
-        setStockHistory(history);
-      }
-    } catch (err) {
-      console.error('Error fetching stock history:', err); // Log the error for debugging
+  // Static stock history
+  const fetchStaticStockHistory = async() => {
+    const res = await axios.get('/api/stock/get-complete-stock');
+    console.log(res.data); // Debugging line
+    if(res.data.success && Array.isArray(res.data.stocks)) {
+      const history = res.data.stocks.map((stock: any) => ({
+        stockId: stock._id,
+        date: new Date(stock.createdAt).toLocaleString(),
+        totalProducts: stock.products.length,
+        totalQuantities: stock.products.reduce((sum: number, product: any) => sum + product.quantity, 0),
+        status: stock.stockStatus,
+        products: stock.products.map((product: any) => ({
+          productId: product.productId,
+          productName: product.productName,
+          quantity: product.quantity,
+        })),
+      }));
+      setStockHistory(history);
     }
+    
   };
 
   useEffect(() => {
     fetchProducts();
     fetchStaticStockHistory();
   }, []);
+
+  const available = products.filter((p) => p.stock > 10);
+  const lowStock = products.filter((p) => p.stock > 0 && p.stock <= 10);
+  const outOfStock = products.filter((p) => p.stock === 0);
+
+  const handleAddProductToList = (id: string) => {
+    if (!addList.some((item) => item.id === id)) {
+      setAddList((prev) => [...prev, { id, quantity: 1 }]);
+    }
+  };
+
+  const handleQuantityChange = (id: string, quantity: number) => {
+    if (quantity < 0) quantity = 0;
+    setAddList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
+    );
+  };
+
+  const handleRemoveFromList = (id: string) => {
+    setAddList((prev) => prev.filter((item) => item.id !== id));
+  };
 
   const handleConfirmAdd = async () => {
     if (addList.length === 0) {
@@ -113,7 +116,7 @@ const StockPage = () => {
           quantity: item.quantity,
         })),
       });
-
+  //  console.log('Add stock result:', result.data); // Debugging line
       if (result.data.success) {
         toast.success('Stock added successfully!');
         setAddStockLoading(false);
@@ -125,8 +128,8 @@ const StockPage = () => {
         toast.error('Failed to add stock.');
         setAddStockLoading(false);
       }
-    } catch (err) {
-      console.error('Error adding stock:', err); // Log the error for debugging
+    } catch (error) {
+    //   console.error('Error adding stock:', error);
       toast.error('An error occurred while adding stock.');
     }
   };
@@ -142,9 +145,9 @@ const StockPage = () => {
           <ErrorComponent error={error} />
         ) : (
           <>
-            <StockSection title="✅ Available Stock" products={products.filter((p) => p.stock > 10)} borderColor="border-green-500" />
-            <StockSection title="⚠️ Low Stock (less than 10)" products={products.filter((p) => p.stock > 0 && p.stock <= 10)} borderColor="border-yellow-500" />
-            <StockSection title="🟥 Out of Stock" products={products.filter((p) => p.stock === 0)} borderColor="border-red-500" />
+            <StockSection title="✅ Available Stock" products={available} borderColor="border-green-500" />
+            <StockSection title="⚠️ Low Stock (less than 10)" products={lowStock} borderColor="border-yellow-500" />
+            <StockSection title="🟥 Out of Stock" products={outOfStock} borderColor="border-red-500" />
             <StockHistorySection
               stockHistory={stockHistory}
               onViewDetails={(id) => router.push(`/owner/stock-management/details?id=${id}`)}
@@ -154,18 +157,14 @@ const StockPage = () => {
 
         {isAddModalOpen && (
           <AddStockModal
-            addStockLoading={addStockLoading}
+          addStockLoading={addStockLoading}
             isOpen={isAddModalOpen}
             onClose={() => setIsAddModalOpen(false)}
             products={products}
             addList={addList}
-            onAddProduct={(id) => setAddList((prev) => [...prev, { id, quantity: 1 }])}
-            onQuantityChange={(id, quantity) =>
-              setAddList((prev) =>
-                prev.map((item) => (item.id === id ? { ...item, quantity } : item))
-              )
-            }
-            onRemoveProduct={(id) => setAddList((prev) => prev.filter((item) => item.id !== id))}
+            onAddProduct={handleAddProductToList}
+            onQuantityChange={handleQuantityChange}
+            onRemoveProduct={handleRemoveFromList}
             onConfirm={handleConfirmAdd}
           />
         )}
@@ -219,7 +218,7 @@ const StockSection = ({
             className={`border-l-4 ${borderColor} bg-white shadow p-4 rounded flex items-center gap-4`}
           >
             {product.image && (
-              <Image src={product.image} height={56} width={56} alt={product.name} className="rounded object-cover" />
+              <img src={product.image} alt={product.name} className="w-16 h-16 rounded object-cover" />
             )}
             <div>
               <h3 className="font-semibold">{product.name}</h3>
@@ -372,7 +371,7 @@ const AddStockModal = ({
                     className="flex items-center gap-2 p-2 hover:bg-yellow-100 cursor-pointer rounded"
                   >
                     {product.image && (
-                      <Image src={product.image} height={40} width={40} alt={product.name} className=" rounded object-cover" />
+                      <img src={product.image} alt={product.name} className="w-10 h-10 rounded object-cover" />
                     )}
                     <span className="flex-1">{product.name}</span>
                     {/* Display Available Stock in Dropdown */}
@@ -399,12 +398,10 @@ const AddStockModal = ({
                   >
                     <div className="flex items-center gap-4">
                       {product.image && (
-                        <Image
-                        width={48}
-                        height={48}
+                        <img
                           src={product.image}
                           alt={product.name}
-                          className=" rounded object-cover"
+                          className="w-12 h-12 rounded object-cover"
                         />
                       )}
                       <div>

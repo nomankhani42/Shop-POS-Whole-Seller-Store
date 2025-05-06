@@ -7,7 +7,6 @@ import axios from "axios";
 import FileUpload from "@/Components/FileUpload";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Image from "next/image";
 
 interface ModalProps {
   isOpen: boolean;
@@ -15,11 +14,11 @@ interface ModalProps {
 }
 
 const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
-  const [title, setTitle] = useState<string>(""); // Specify type as string
-  const [imageUrl, setImageUrl] = useState<string | null>(null); // Specify type as string or null
-  const [uploadProgress, setUploadProgress] = useState<number>(0); // Specify type as number
-  const [isUploading, setIsUploading] = useState<boolean>(false); // Specify type as boolean
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // Specify type as boolean
+  const [title, setTitle] = useState("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleUploadProgress = (progress: number) => {
     setUploadProgress(progress);
@@ -52,14 +51,8 @@ const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
       setTitle("");
       setImageUrl(null);
       setUploadProgress(0);
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        console.error("Axios error:", err.response?.data || err.message);
-        toast.error(err.response?.data?.message || "Failed to add category");
-      } else {
-        console.error("Unexpected error:", err);
-        toast.error("An unexpected error occurred.");
-      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to add category");
     } finally {
       setIsSubmitting(false);
     }
@@ -133,7 +126,7 @@ const AddCategoryModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 transition={{ duration: 0.3 }}
                 className="relative w-full h-full flex items-center justify-center"
               >
-                <Image layout="responsive" height={100} width={100} src={imageUrl} alt="Preview" className=" object-contain" />
+                <img src={imageUrl} alt="Preview" className="max-h-full max-w-full object-contain" />
                 <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
                   <CheckCircle className="text-green-500 w-10 h-10" />
                   <span className="text-white font-semibold ml-2">Image uploaded successfully!</span>
