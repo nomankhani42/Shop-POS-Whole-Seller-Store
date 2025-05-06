@@ -8,7 +8,7 @@ const publicKey = process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY as string;
 
 const authenticator = async () => {
   try {
-    const response = await fetch("https://shop-pos-whole-seller-store.vercel.app/api/file");
+    const response = await fetch("/api/file");
 
     if (!response.ok) {
       const errorText = await response.text();
