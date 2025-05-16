@@ -1,7 +1,7 @@
 import mongoose, { Schema, model, Document, models } from "mongoose";
 
 // ✅ Define Product Interface
-interface IProduct extends Document {
+export interface IProduct extends Document {
   name: string;
   sku: string;
   category: mongoose.Schema.Types.ObjectId;

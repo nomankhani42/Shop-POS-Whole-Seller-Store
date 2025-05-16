@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
         return {
           productId: product.productId,
           quantity: product.quantity,
-          status: "not_received", // default status per product
+          status: "pending", // default status per product
         };
       })
     );
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     // Create stock entry
     const stock = await Stock.create({
       products: formattedProducts,
-      stockStatus: "not_received", // overall status
+      stockStatus: "pending", // overall status
     });
 
     return NextResponse.json({ success:true,message: "Stock created successfully", stock }, { status: 201 });

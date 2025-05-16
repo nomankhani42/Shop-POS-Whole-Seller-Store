@@ -4,9 +4,9 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import OwnerLayout from '@/Layout/owner/OwnerLayout';
 import { Plus, X, Trash2, Loader } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation'; // Import useRouter
 
 // Interfaces
 interface Product {
@@ -34,7 +34,7 @@ const StockPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [addStockLoading, setAddStockLoading] = useState<boolean>(false);
-  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'available' | 'lowStock' | 'outOfStock' | 'history'>('available');
 
   // Fetch products
   const fetchProducts = async () => {
@@ -54,31 +54,33 @@ const StockPage = () => {
     }
   };
 
-  // Static stock history
-  const fetchStaticStockHistory = async() => {
-    const res = await axios.get('/api/stock/get-complete-stock');
-    console.log(res.data); // Debugging line
-    if(res.data.success && Array.isArray(res.data.stocks)) {
-      const history = res.data.stocks.map((stock: any) => ({
-        stockId: stock._id,
-        date: new Date(stock.createdAt).toLocaleString(),
-        totalProducts: stock.products.length,
-        totalQuantities: stock.products.reduce((sum: number, product: any) => sum + product.quantity, 0),
-        status: stock.stockStatus,
-        products: stock.products.map((product: any) => ({
-          productId: product.productId,
-          productName: product.productName,
-          quantity: product.quantity,
-        })),
-      }));
-      setStockHistory(history);
+  // Fetch stock history
+  const fetchStockHistory = async () => {
+    try {
+      const res = await axios.get('/api/stock/get-complete-stock');
+      if (res.data.success && Array.isArray(res.data.stocks)) {
+        const history = res.data.stocks.map((stock: any) => ({
+          stockId: stock._id,
+          date: new Date(stock.createdAt).toLocaleString(),
+          totalProducts: stock.products.length,
+          totalQuantities: stock.products.reduce((sum: number, product: any) => sum + product.quantity, 0),
+          status: stock.stockStatus,
+          products: stock.products.map((product: any) => ({
+            productId: product.productId,
+            productName: product.productName,
+            quantity: product.quantity,
+          })),
+        }));
+        setStockHistory(history);
+      }
+    } catch (err) {
+      console.error('Error fetching stock history:', err);
     }
-    
   };
 
   useEffect(() => {
     fetchProducts();
-    fetchStaticStockHistory();
+    fetchStockHistory();
   }, []);
 
   const available = products.filter((p) => p.stock > 10);
@@ -116,20 +118,18 @@ const StockPage = () => {
           quantity: item.quantity,
         })),
       });
-  //  console.log('Add stock result:', result.data); // Debugging line
       if (result.data.success) {
         toast.success('Stock added successfully!');
         setAddStockLoading(false);
         setAddList([]); // Clear the add list
         fetchProducts(); // Refresh the product list
-        fetchStaticStockHistory();
+        fetchStockHistory();
         setIsAddModalOpen(false); // Close the modal
       } else {
         toast.error('Failed to add stock.');
         setAddStockLoading(false);
       }
     } catch (error) {
-    //   console.error('Error adding stock:', error);
       toast.error('An error occurred while adding stock.');
     }
   };
@@ -137,37 +137,133 @@ const StockPage = () => {
   return (
     <OwnerLayout>
       <div className="p-6 space-y-10 bg-gray-50 min-h-screen">
+        {/* Header */}
         <Header onAddStock={() => setIsAddModalOpen(true)} />
 
-        {loading ? (
-          <LoaderComponent />
-        ) : error ? (
-          <ErrorComponent error={error} />
-        ) : (
-          <>
-            <StockSection title="✅ Available Stock" products={available} borderColor="border-green-500" />
-            <StockSection title="⚠️ Low Stock (less than 10)" products={lowStock} borderColor="border-yellow-500" />
-            <StockSection title="🟥 Out of Stock" products={outOfStock} borderColor="border-red-500" />
-            <StockHistorySection
-              stockHistory={stockHistory}
-              onViewDetails={(id) => router.push(`/owner/stock-management/details?id=${id}`)}
-            />
-          </>
-        )}
+        {/* Tabs */}
+        <motion.div
+          className="flex gap-4"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <button
+            onClick={() => setActiveTab('available')}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+              activeTab === 'available'
+                ? 'bg-yellow-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Available Stock
+          </button>
+          <button
+            onClick={() => setActiveTab('lowStock')}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+              activeTab === 'lowStock'
+                ? 'bg-yellow-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Low Stock
+          </button>
+          <button
+            onClick={() => setActiveTab('outOfStock')}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+              activeTab === 'outOfStock'
+                ? 'bg-yellow-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Out of Stock
+          </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+              activeTab === 'history'
+                ? 'bg-yellow-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Stock History
+          </button>
+        </motion.div>
 
-        {isAddModalOpen && (
-          <AddStockModal
-          addStockLoading={addStockLoading}
-            isOpen={isAddModalOpen}
-            onClose={() => setIsAddModalOpen(false)}
-            products={products}
-            addList={addList}
-            onAddProduct={handleAddProductToList}
-            onQuantityChange={handleQuantityChange}
-            onRemoveProduct={handleRemoveFromList}
-            onConfirm={handleConfirmAdd}
-          />
-        )}
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <LoaderComponent />
+          ) : error ? (
+            <ErrorComponent error={error} />
+          ) : (
+            <>
+              {activeTab === 'available' && (
+                <motion.div
+                  key="available"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <StockSection title="✅ Available Stock" products={available} borderColor="border-green-500" />
+                </motion.div>
+              )}
+              {activeTab === 'lowStock' && (
+                <motion.div
+                  key="lowStock"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <StockSection title="⚠️ Low Stock (less than 10)" products={lowStock} borderColor="border-yellow-500" />
+                </motion.div>
+              )}
+              {activeTab === 'outOfStock' && (
+                <motion.div
+                  key="outOfStock"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <StockSection title="🟥 Out of Stock" products={outOfStock} borderColor="border-red-500" />
+                </motion.div>
+              )}
+              {activeTab === 'history' && (
+                <motion.div
+                  key="history"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <StockHistorySection
+                    stockHistory={stockHistory}
+                    onViewDetails={(id) => console.log(`View details for stock ID: ${id}`)}
+                  />
+                </motion.div>
+              )}
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Add Stock Modal */}
+        <AnimatePresence>
+          {isAddModalOpen && (
+            <AddStockModal
+              addStockLoading={addStockLoading}
+              isOpen={isAddModalOpen}
+              onClose={() => setIsAddModalOpen(false)}
+              products={products}
+              addList={addList}
+              onAddProduct={handleAddProductToList}
+              onQuantityChange={handleQuantityChange}
+              onRemoveProduct={handleRemoveFromList}
+              onConfirm={handleConfirmAdd}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </OwnerLayout>
   );
@@ -238,51 +334,67 @@ const StockHistorySection = ({
   onViewDetails,
 }: {
   stockHistory: StockHistoryItem[];
-  onViewDetails: (stockId: string) => void;
-}) => (
-  <section className="mt-10">
-    <h2 className="text-xl font-semibold mb-4">🕘 Stock History</h2>
-    {stockHistory.length > 0 ? (
-      <div className="bg-white rounded-md shadow p-4 overflow-x-auto">
-        <table className="w-full table-auto border text-sm">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="border p-3">Date & Time</th>
-              <th className="border p-3">Stock ID</th>
-              <th className="border p-3">Total Products</th>
-              <th className="border p-3">Total Quantities</th>
-              <th className="border p-3">Status</th>
-              <th className="border p-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stockHistory.map((entry) => (
-              <tr key={entry.stockId} className="hover:bg-gray-50">
-                <td className="border p-3">{entry.date}</td>
-                <td className="border p-3">{entry.stockId}</td>
-                <td className="border p-3">{entry.totalProducts}</td>
-                <td className="border p-3">{entry.totalQuantities}</td>
-                <td className={`border p-3 font-semibold ${entry.status === 'Received' ? 'text-green-500' : 'text-red-500'}`}>
-                  {entry.status}
-                </td>
-                <td className="border p-3 text-center">
-                  <button
-                    onClick={() => onViewDetails(entry.stockId)}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    View Details
-                  </button>
-                </td>
+  onViewDetails?: (stockId: string) => void; // Optional callback
+}) => {
+  const router = useRouter(); // Initialize useRouter
+
+  return (
+    <section className="mt-10">
+      <h2 className="text-xl font-semibold mb-4">🕘 Stock History</h2>
+      {stockHistory.length > 0 ? (
+        <div className="bg-white rounded-md shadow p-4 overflow-x-auto">
+          <table className="w-full table-auto border text-sm">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="border p-3">Date & Time</th>
+                <th className="border p-3">Stock ID</th>
+                <th className="border p-3">Total Products</th>
+                <th className="border p-3">Total Quantities</th>
+                <th className="border p-3">Status</th>
+                <th className="border p-3 text-center">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    ) : (
-      <p className="text-gray-500">No stock history available.</p>
-    )}
-  </section>
-);
+            </thead>
+            <tbody>
+              {stockHistory.map((entry) => (
+                <tr key={entry.stockId} className="hover:bg-gray-50">
+                  <td className="border p-3">{entry.date}</td>
+                  <td className="border p-3">{entry.stockId}</td>
+                  <td className="border p-3">{entry.totalProducts}</td>
+                  <td className="border p-3">{entry.totalQuantities}</td>
+                  <td
+                    className={`border p-3 font-semibold ${
+                      entry.status === 'received'
+                        ? 'text-green-500'
+                        : entry.status === 'pending'
+                        ? 'text-yellow-500'
+                        : 'text-red-500'
+                    }`}
+                  >
+                    { entry.status === 'received'
+                        ? 'Received'
+                        : entry.status === 'pending'
+                        ? 'Pending'
+                        : 'Not Received' }
+                  </td>
+                  <td className="border p-3 text-center">
+                    <button
+                      onClick={() => router.push(`/owner/stock-management/details?id=${entry.stockId}`)} // Navigate with ID
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      View Details
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="text-gray-500">No stock history available.</p>
+      )}
+    </section>
+  );
+};
 
 // Add Stock Modal Component
 const AddStockModal = ({

@@ -1,139 +1,234 @@
-"use client";
-import ShopLayout from "@/Layout/shopkeeper/ShopLayout";
-import { motion } from "framer-motion";
-import { useState } from "react";
+'use client'
 
-// Sample Stock Data
-const stockData = [
-  { id: 1, name: "Solar Panel 500W", quantity: 20, status: "Pending", date: "March 10, 2025", time: "10:30 AM" },
-  { id: 2, name: "Battery 200Ah", quantity: 15, status: "Verified", date: "March 9, 2025", time: "02:45 PM" },
-  { id: 3, name: "Wire 10mm", quantity: 50, status: "Pending", date: "March 8, 2025", time: "05:10 PM" },
-];
+import ShopLayout from '@/Layout/shopkeeper/ShopLayout'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import { IStock } from '@/models/Stock'
+import { IProduct } from '@/models/product'
+import { ICategory } from '@/models/category'
+import { useRouter } from 'next/navigation'
+import Dropdown from "@/Components/shopkeeper/Dropdown"
+// import { useRouter } from 'next/router'
 
-const StockVerification = () => {
-  const [stocks, setStocks] = useState(stockData);
+export default function StockVerificationPage() {
+  const [activeTab, setActiveTab] = useState<'pending' | 'available' | 'lowStock' | 'outOfStock'>('pending')
+  const [pendingStock, setPendingStock] = useState<IStock[]>([]) // Store pending stock data
+  const [products, setProducts] = useState<IProduct[]>([]) // Store all products
+  const [categories, setCategories] = useState<ICategory[]>([]) // Store categories
+  const [loading, setLoading] = useState<boolean>(true)
+  const router=useRouter()
 
-  // Count Status
-  const totalItems = stocks.length;
-  const verifiedCount = stocks.filter(stock => stock.status === "Verified").length;
-  const pendingCount = stocks.filter(stock => stock.status === "Pending").length;
+  // Fetch data when the component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      await Promise.all([fetchCategories(), fetchProducts(), fetchPendingStock()])
+      setLoading(false)
+    }
 
-  // Update Stock Status
-  const handleVerification = (id: number, status: "Verified" | "Rejected") => {
-    setStocks(stocks.map(stock => stock.id === id ? { ...stock, status } : stock));
-  };
+    fetchData()
+  }, [])
 
+  // Fetch categories from the API
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('/api/category/get-category') // Fetch all categories
+      const { success, categories: fetchedCategories } = response.data
+
+      if (success && Array.isArray(fetchedCategories)) {
+        setCategories(fetchedCategories) // Store categories
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    }
+  }
+
+  // Fetch products from the API
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get('/api/product/get-products') // Fetch all products
+      const { success, products: fetchedProducts } = response.data
+
+      if (success && Array.isArray(fetchedProducts)) {
+        setProducts(fetchedProducts) // Store products
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error)
+    }
+  }
+
+  // Fetch pending stock from the API
+  const fetchPendingStock = async () => {
+    try {
+      const response = await axios.get('/api/stock/get-complete-stock') // Fetch stock data
+      const { success, stocks } = response.data
+
+      if (success && Array.isArray(stocks)) {
+        setPendingStock(stocks) // Store pending stock
+      }
+    } catch (error) {
+      console.error('Error fetching pending stock:', error)
+    }
+  }
+
+  // Get the category name based on the category ID
+  const getCategoryName = (categoryId: string): string => {
+    const category = categories.find((cat) => cat._id === categoryId)
+    return category ? category.title : 'Unknown Category'
+  }
+
+  // Render pending stock table
+  const renderPendingStockTable = () => {
+    if (pendingStock.length === 0) {
+      return <p className="text-gray-500">No pending stock available.</p>
+    }
+
+    return (
+      <table className="w-full border-collapse border text-sm">
+        <thead>
+          <tr className="bg-gray-100 text-left">
+            <th className="border p-3">Date & Time</th>
+            <th className="border p-3">Stock ID</th>
+            <th className="border p-3">Total Products</th>
+            <th className="border p-3">Total Quantities</th>
+            <th className="border p-3 text-center">Status</th>
+            <th className="border p-3 text-center">View Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pendingStock.map((stock) => (
+            <tr key={stock._id} className="hover:bg-gray-50">
+              <td className="border p-3">{new Date(stock.createdAt).toLocaleString()}</td>
+              <td className="border p-3">{stock._id}</td>
+              <td className="border p-3">{stock.products.length}</td>
+              <td className="border p-3">
+                {stock.products.reduce((total, product) => total + product.quantity, 0)}
+              </td>
+              <td className="border p-3 text-center">
+                {stock.stockStatus === 'received' ? (
+                  <span className="text-green-500">Received</span>
+                ) : stock.stockStatus === 'pending' ?  <Dropdown dropdownList={["Received","Not Received"]}/> : (
+                  <span className="text-red-500">Not Received</span>
+                )}
+              </td>
+              <td className="border p-3 text-center">
+                <button
+                  onClick={() => router.push(`/shopkeeper/stock-verification/${stock._id}`)}
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg mr-2"
+                >
+                  View Details
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
+  }
+
+  // Render product table for available, low stock, and out of stock
+  const renderProductTable = (filterFn: (product: IProduct) => boolean) => {
+    const filteredProducts = products.filter(filterFn)
+
+    if (filteredProducts.length === 0) {
+      return <p className="text-gray-500">No data available.</p>
+    }
+
+    return (
+      <table className="w-full border-collapse border text-sm">
+        <thead>
+          <tr className="bg-gray-100 text-left">
+            <th className="border p-3">Product</th>
+            <th className="border p-3">Stock</th>
+            <th className="border p-3">Category</th>
+            <th className="border p-3">Last Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredProducts.map((product) => (
+            <tr key={product._id} className="hover:bg-gray-50">
+              <td className="border p-3 flex items-center gap-3">
+                <img
+                  src={product.image || '/placeholder.png'}
+                  alt={product.name}
+                  className="w-12 h-12 object-cover rounded-md border"
+                />
+                <span>{product.name}</span>
+              </td>
+              <td className="border p-3">{product.stock}</td>
+              <td className="border p-3">{getCategoryName(product.category.toString())}</td>
+              <td className="border p-3">{new Date(product.updatedAt || '').toLocaleString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
+  }
+
+  
   return (
     <ShopLayout>
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <motion.h2 
-          initial={{ opacity: 0, y: -20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ duration: 0.5 }} 
-          className="text-2xl font-semibold text-gray-800"
-        >
-          Stock Verification
-        </motion.h2>
+      <div className="px-6 py-8">
+        <h1 className="text-3xl font-bold text-yellow-700 mb-6">Stock Verification</h1>
 
-        {/* Stock Overview Cards */}
-        <div className="grid grid-cols-3 gap-6">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.5 }}
-            className="bg-blue-500 text-white p-5 rounded-lg shadow-md"
+        {/* Tabs */}
+        <div className="flex gap-4 mb-6">
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+              activeTab === 'pending'
+                ? 'bg-yellow-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
           >
-            <h3 className="text-lg font-medium">Total Items</h3>
-            <p className="text-3xl font-bold">{totalItems}</p>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.6 }}
-            className="bg-green-500 text-white p-5 rounded-lg shadow-md"
+            Pending Stock
+          </button>
+          <button
+            onClick={() => setActiveTab('available')}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+              activeTab === 'available'
+                ? 'bg-yellow-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
           >
-            <h3 className="text-lg font-medium">Verified</h3>
-            <p className="text-3xl font-bold">{verifiedCount}</p>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.7 }}
-            className="bg-yellow-500 text-white p-5 rounded-lg shadow-md"
+            Available Stock
+          </button>
+          <button
+            onClick={() => setActiveTab('lowStock')}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+              activeTab === 'lowStock'
+                ? 'bg-yellow-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
           >
-            <h3 className="text-lg font-medium">Pending</h3>
-            <p className="text-3xl font-bold">{pendingCount}</p>
-          </motion.div>
+            Low Stock
+          </button>
+          <button
+            onClick={() => setActiveTab('outOfStock')}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+              activeTab === 'outOfStock'
+                ? 'bg-yellow-600 text-white shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Out of Stock
+          </button>
         </div>
 
-        {/* Stock Table */}
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          <table className="w-full border-collapse">
-            {/* Table Header */}
-            <thead>
-              <tr className="bg-gray-100 text-gray-700">
-                <th className="p-4 text-left">Product</th>
-                <th className="p-4 text-left">Quantity</th>
-                <th className="p-4 text-left">Status</th>
-                <th className="p-4 text-left">Date</th>
-                <th className="p-4 text-left">Time</th>
-                <th className="p-4 text-left">Actions</th>
-              </tr>
-            </thead>
-
-            {/* Table Body */}
-            <tbody>
-              {stocks.map((stock) => (
-                <motion.tr 
-                  key={stock.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: stock.id * 0.1 }}
-                  className="border-b"
-                >
-                  <td className="p-4">{stock.name}</td>
-                  <td className="p-4">{stock.quantity}</td>
-                  <td className="p-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold 
-                      ${stock.status === "Verified" ? "bg-green-100 text-green-700" : 
-                      stock.status === "Rejected" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}
-                    >
-                      {stock.status}
-                    </span>
-                  </td>
-                  <td className="p-4">{stock.date}</td>
-                  <td className="p-4">{stock.time}</td>
-                  <td className="p-4 flex gap-2">
-                    {stock.status === "Pending" && (
-                      <>
-                        <motion.button
-                          whileTap={{ scale: 0.95 }}
-                          className="px-4 py-2 bg-green-500 text-white rounded-md shadow hover:bg-green-600 transition"
-                          onClick={() => handleVerification(stock.id, "Verified")}
-                        >
-                          Approve
-                        </motion.button>
-                        <motion.button
-                          whileTap={{ scale: 0.95 }}
-                          className="px-4 py-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600 transition"
-                          onClick={() => handleVerification(stock.id, "Rejected")}
-                        >
-                          Reject
-                        </motion.button>
-                      </>
-                    )}
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Tab Content */}
+        <div className="bg-white p-5 rounded-lg shadow-md">
+          {loading ? (
+            <p className="text-center text-yellow-500">Loading...</p>
+          ) : (
+            <>
+              {activeTab === 'pending' && renderPendingStockTable()}
+              {activeTab === 'available' && renderProductTable((product) => product.stock > 10)}
+              {activeTab === 'lowStock' && renderProductTable((product) => product.stock > 0 && product.stock <= 10)}
+              {activeTab === 'outOfStock' && renderProductTable((product) => product.stock === 0)}
+            </>
+          )}
         </div>
       </div>
     </ShopLayout>
-  );
-};
-
-export default StockVerification;
+  )
+}
