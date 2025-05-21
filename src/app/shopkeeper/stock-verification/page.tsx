@@ -8,6 +8,8 @@ import { IProduct } from '@/models/product'
 import { ICategory } from '@/models/category'
 import { useRouter } from 'next/navigation'
 import Dropdown from "@/Components/shopkeeper/Dropdown"
+import { toast } from 'react-toastify'
+import { Loader, Loader2 } from 'lucide-react'
 // import { useRouter } from 'next/router'
 
 export default function StockVerificationPage() {
@@ -16,7 +18,36 @@ export default function StockVerificationPage() {
   const [products, setProducts] = useState<IProduct[]>([]) // Store all products
   const [categories, setCategories] = useState<ICategory[]>([]) // Store categories
   const [loading, setLoading] = useState<boolean>(true)
-  const router=useRouter()
+  const [stockLoading, setStockLoading] = useState<boolean>(false)
+  const [selectedStock, setSelectedStock] = useState<IStock | null>(null) // Store selected stock for verification
+
+  const router = useRouter()
+
+
+  const AllProductStatusHandle = async (status: string, item: IStock): Promise<void> => {
+    setSelectedStock(item)
+    if (status == "Received") {
+      setStockLoading(true)
+      const response = await axios.put(`/api/stock/verify-complete-stock?id=${item._id}`) // API endpoint to verify stock
+      if (response.data.success) {
+         fetchPendingStock() 
+        toast.success("Stock verified successfully")
+        setStockLoading(false)
+       
+      }
+    }
+    if (status=="Not Received"){
+  setStockLoading(true)
+      const response = await axios.patch(`/api/stock/decline-complete-stock?stock_id=${item._id}`) // API endpoint to verify stock
+      if (response.data.success) {
+         fetchPendingStock() 
+        toast.success("Stock Declined Successfully")
+        setStockLoading(false)
+       
+      }
+    }
+
+  }
 
   // Fetch data when the component mounts
   useEffect(() => {
@@ -96,31 +127,49 @@ export default function StockVerificationPage() {
           </tr>
         </thead>
         <tbody>
-          {pendingStock.map((stock) => (
-            <tr key={stock._id} className="hover:bg-gray-50">
-              <td className="border p-3">{new Date(stock.createdAt).toLocaleString()}</td>
-              <td className="border p-3">{stock._id}</td>
-              <td className="border p-3">{stock.products.length}</td>
-              <td className="border p-3">
-                {stock.products.reduce((total, product) => total + product.quantity, 0)}
-              </td>
-              <td className="border p-3 text-center">
-                {stock.stockStatus === 'received' ? (
-                  <span className="text-green-500">Received</span>
-                ) : stock.stockStatus === 'pending' ?  <Dropdown dropdownList={["Received","Not Received"]}/> : (
-                  <span className="text-red-500">Not Received</span>
-                )}
-              </td>
-              <td className="border p-3 text-center">
-                <button
-                  onClick={() => router.push(`/shopkeeper/stock-verification/${stock._id}`)}
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg mr-2"
-                >
-                  View Details
-                </button>
-              </td>
-            </tr>
-          ))}
+          {pendingStock.map((stock) => {
+
+            return (
+
+              <tr key={stock._id} className="hover:bg-gray-50">
+                <td className="border p-3">{new Date(stock.createdAt).toLocaleString()}</td>
+                <td className="border p-3">{stock._id}</td>
+                <td className="border p-3">{stock.products.length}</td>
+                <td className="border p-3">
+                  {stock.products.reduce((total, product) => total + product.quantity, 0)}
+                </td>
+                <td className="border p-3 text-center">
+                  {stockLoading && selectedStock?._id == stock._id ? <div className='flex items-center justify-center'>
+                    <Loader2 className=' animate-spin color text-yellow-500' />
+                  </div> : (stock.stockStatus === 'received' ? (
+                    <span className="text-green-500">Received</span>
+                  ) : stock.stockStatus === 'pending' ?
+                    <div className=' flex justify-center items-center'>
+                      <Dropdown
+                      dropdownList={["Received", "Not Received"]}
+                      handleSelect={AllProductStatusHandle}
+                      data={stock}
+                    />
+                    </div> :stock.stockStatus==="received_partially"?
+                     (
+                      <span className="text-yellow-500">Received Partially</span>
+                    )
+                    :
+                    (
+                      <span className="text-red-500">Not Received</span>
+                    ))}
+                </td>
+                <td className="border p-3 text-center">
+                  <button
+                    onClick={() => router.push(`/shopkeeper/stock-verification/${stock._id}`)}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg mr-2"
+                  >
+                    View Details
+                  </button>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     )
@@ -165,7 +214,7 @@ export default function StockVerificationPage() {
     )
   }
 
-  
+
   return (
     <ShopLayout>
       <div className="px-6 py-8">
@@ -175,41 +224,37 @@ export default function StockVerificationPage() {
         <div className="flex gap-4 mb-6">
           <button
             onClick={() => setActiveTab('pending')}
-            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-              activeTab === 'pending'
-                ? 'bg-yellow-600 text-white shadow-md'
-                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-            }`}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${activeTab === 'pending'
+              ? 'bg-yellow-600 text-white shadow-md'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
           >
             Pending Stock
           </button>
           <button
             onClick={() => setActiveTab('available')}
-            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-              activeTab === 'available'
-                ? 'bg-yellow-600 text-white shadow-md'
-                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-            }`}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${activeTab === 'available'
+              ? 'bg-yellow-600 text-white shadow-md'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
           >
             Available Stock
           </button>
           <button
             onClick={() => setActiveTab('lowStock')}
-            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-              activeTab === 'lowStock'
-                ? 'bg-yellow-600 text-white shadow-md'
-                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-            }`}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${activeTab === 'lowStock'
+              ? 'bg-yellow-600 text-white shadow-md'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
           >
             Low Stock
           </button>
           <button
             onClick={() => setActiveTab('outOfStock')}
-            className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-              activeTab === 'outOfStock'
-                ? 'bg-yellow-600 text-white shadow-md'
-                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-            }`}
+            className={`px-4 py-2 rounded-lg transition-all duration-200 ${activeTab === 'outOfStock'
+              ? 'bg-yellow-600 text-white shadow-md'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
           >
             Out of Stock
           </button>
@@ -218,7 +263,9 @@ export default function StockVerificationPage() {
         {/* Tab Content */}
         <div className="bg-white p-5 rounded-lg shadow-md">
           {loading ? (
-            <p className="text-center text-yellow-500">Loading...</p>
+           <div className='min-h-[70vh] flex items-center justify-center'>
+             <Loader className="w-12 h-12 text-yellow-500 animate-spin" /> 
+           </div>
           ) : (
             <>
               {activeTab === 'pending' && renderPendingStockTable()}

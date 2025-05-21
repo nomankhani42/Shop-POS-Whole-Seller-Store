@@ -7,6 +7,8 @@ import axios from 'axios';
 import Image from 'next/image';
 import { IProduct } from '@/models/product';
 import Dropdown from "@/Components/shopkeeper/Dropdown";
+import { toast } from 'react-toastify';
+import { Loader, Loader2 } from 'lucide-react';
 
 interface IStockProduct {
   productId: IProduct;
@@ -17,46 +19,117 @@ interface IStockProduct {
 interface IStockDetails {
   _id: string;
   products: IStockProduct[];
-  stockStatus: "pending" | "received" | "not_received";
+  stockStatus: "pending" | "received" | "not_received" | "received_partially";
   createdAt: string;
 }
 
 const StockDetailsPage = () => {
-  const { id } = useParams(); // Get the stock ID from the route parameters
+  const { id } = useParams();
   const [stockDetails, setStockDetails] = useState<IStockDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  // const [isAllModal,setIsAllModal]=useState<boolean>(false)
+  const [stockLoading, setStockLoading] = useState<boolean>(false);
+  const [productStockLoading, setProductStockLoading] = useState<boolean>(false);
+  const [stockProductData, setStockProductData] = useState<IStockProduct | null>(null);
 
-  // const toggle=():void=>{
-  //      setIsAllModal(!isAllModal)
-  // }
+  // Handler for verifying all stock
+  const HandleAllStock = async (status: string, item: IStockDetails) => {
+    setStockProductData(item)
+    setStockLoading(true);
+    try {
+      if (status === "Received") {
+        const response = await axios.put(`/api/stock/verify-complete-stock?id=${item._id}`);
+        if (response.data.success) {
+          toast.success("Stock verified successfully");
+          setStockDetails(response.data.stock);
+          setStockLoading(false);
+        }
+      }
 
-  // Fetch stock details by ID
-  useEffect(() => {
-    const fetchStockDetails = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get(`/api/stock/get-single-stock?id=${id}`); // API endpoint to fetch stock details
+      if (status == "Not Received") {
+        setStockLoading(true)
+        const response = await axios.patch(`/api/stock/decline-complete-stock?stock_id=${item._id}`) // API endpoint to verify stock
         if (response.data.success) {
           setStockDetails(response.data.stock);
-        }
-      } catch (error) {
-        console.error("Error fetching stock details:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+          toast.success("Stock Declined Successfully")
+          setStockLoading(false)
 
+        }
+      }
+
+
+
+    } catch (error) {
+      toast.error("Failed to verify stock");
+    } finally {
+      setStockLoading(false);
+    }
+  };
+
+  // Handler for verifying a single product in the stock
+  const StockProductHandle = async (status: string, item: IStockProduct) => {
+    setStockProductData(item)
+    console.log(item)
+    setProductStockLoading(true);
+    try {
+      if (status === "Received") {
+        const response = await axios.patch(
+          `/api/stock/receive-single-item-stock?p_id=${item.productId._id}&stock_id=${id}`
+        );
+        if (response.data.success) {
+          toast.success("Product stock verified successfully");
+          setProductStockLoading(false);
+          setStockDetails(response.data.stock);
+
+        }
+      }
+
+      // if not received 
+      if (status === "Not Received") {
+        const response = await axios.patch(
+          `/api/stock/decline-single-item-stock?p_id=${item.productId._id}&stock_id=${id}`
+        );
+        if (response.data.success) {
+          toast.success("Product stock verified successfully");
+          setProductStockLoading(false);
+          setStockDetails(response.data.stock);
+
+        }
+      }
+    }
+
+    catch (error) {
+      toast.error("Failed to verify product stock");
+    } finally {
+      setProductStockLoading(false);
+    }
+  };
+
+  const fetchStockDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`/api/stock/get-single-stock?id=${id}`);
+      if (response.data.success) {
+        setStockDetails(response.data.stock);
+      }
+    } catch (error) {
+      console.error("Error fetching stock details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (id) {
       fetchStockDetails();
     }
+    // eslint-disable-next-line
   }, [id]);
 
   if (loading) {
     return (
       <ShopLayout>
         <div className="flex items-center justify-center h-screen">
-          <p className="text-gray-600">Loading stock details...</p>
+         <Loader className="w-12 h-12 text-yellow-500 animate-spin" /> {/* Lucide Loader */}
         </div>
       </ShopLayout>
     );
@@ -78,8 +151,7 @@ const StockDetailsPage = () => {
         <h1 className="text-2xl font-bold text-yellow-700 mb-4">Stock Details</h1>
         {/* Header Section */}
         <div className="bg-white rounded-md shadow p-6 mb-6">
-
-          <div className="flex items-center justify-between  ">
+          <div className="flex items-center justify-between">
             <div className='flex items-center gap-x-5'>
               <p className="text-gray-600 font-semibold">Stock ID:</p>
               <p className="text-gray-800">{stockDetails._id}</p>
@@ -90,22 +162,30 @@ const StockDetailsPage = () => {
             </div>
             <div className='flex items-center gap-x-5 pr-20'>
               <p className="text-gray-600 font-semibold">Status:</p>
-              <p
+              <span
                 className={`text-lg font-semibold ${stockDetails.stockStatus === "received"
-                    ? "text-green-500"
-                    : stockDetails.stockStatus === "pending"
-                      ? "text-yellow-500"
-                      : "text-red-500"
+                  ? "text-green-500"
+                  : stockDetails.stockStatus === "pending"
+                    ? "text-yellow-500"
+                    :stockDetails.stockStatus==="received_partially"? "text-orange-500" : "text-red-500"
                   }`}
               >
-                {stockDetails.stockStatus === "received"
-                  ? "Received"
-                  : stockDetails.stockStatus === "pending"
-                    ? <Dropdown
-                      dropdownList={["Received", "Not Received"]}
-                    />
-                    : "Not Received"}
-              </p>
+                {stockLoading ? (
+                  <Loader2 className="animate-spin text-xl text-yellow-500 inline" />
+                ) : stockDetails.stockStatus === "received" ? (
+                  "Received"
+                ) : stockDetails.stockStatus === "pending" ? (
+                  <Dropdown
+                    label={stockDetails.stockStatus}
+                    handleSelect={(status: string) => HandleAllStock(status, stockDetails)}
+                    data={stockDetails}
+                    dropdownList={["Received", "Not Received"]}
+                    disabled={stockLoading || productStockLoading}
+                  />
+                ) : stockDetails?.stockStatus === "received_partially" ? "Received Partially" : (
+                  "Not Received"
+                )}
+              </span>
             </div>
           </div>
         </div>
@@ -145,30 +225,37 @@ const StockDetailsPage = () => {
                     <td className="border p-3">{productItem.quantity}</td>
                     <td
                       className={`border p-3 font-semibold ${productItem.status === "received"
-                          ? "text-green-500"
-                          : productItem.status === "pending"
-                            ? "text-yellow-500"
-                            : "text-red-500"
+                        ? "text-green-500"
+                        : productItem.status === "pending"
+                          ? "text-yellow-500"
+                          : "text-red-500"
                         }`}
                     >
-                      {productItem.status === "received"
-                        ? "Received"
-                        : productItem.status === "pending"
-                          ?
-                          <Dropdown
-
-                            dropdownList={["Received", "Not Received"]} />
-
-                          : "Not Received"}
+                      {(stockProductData?.productId?._id === product._id) && (productStockLoading) ? (
+                        <div >
+                          <Loader2 className="animate-spin block m-auto text-xl text-yellow-500 " />
+                        </div>
+                      ) : productItem.status === "received" ? (
+                        "Received"
+                      ) : productItem.status === "pending" ? (
+                        <Dropdown
+                          handleSelect={(status: string) => StockProductHandle(status, productItem)}
+                          data={product}
+                          dropdownList={["Received", "Not Received"]}
+                          disabled={productStockLoading || stockLoading}
+                        />
+                      ) : (
+                        "Not Received"
+                      )}
                     </td>
                     <td className="border p-3">
-                      <Image
-                        src={product.qrCodeUrl}
+                      {product.barcode ? <Image
+                        src={product.barcode}
                         alt="QR Code"
-                        width={50}
+                        width={98}
                         height={50}
-                        className="w-12 h-12 object-cover rounded-md border"
-                      />
+                        className="w-24 h-12 object-cover rounded-md border"
+                      /> : "N/A"}
                     </td>
                     <td className="border p-3">
                       {product.qrCodeUrl ? (

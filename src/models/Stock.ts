@@ -13,7 +13,7 @@ interface IStockProduct {
 export interface IStock extends Document {
   _id: string;
   products: IStockProduct[];
-  stockStatus: "pending" | "received" | "not_received";
+  stockStatus: "pending" | "received" | "not_received"  | "received_partially"; // Overall stock status
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,7 +41,7 @@ const StockSchema = new Schema<IStock>(
     },
     stockStatus: {
       type: String,
-      enum: ["pending", "received", "not_received"], // Ensure "pending" is included
+      enum: ["pending", "received", "not_received",'received_partially'], // Ensure "pending" is included
       default: "pending",
     },
   },

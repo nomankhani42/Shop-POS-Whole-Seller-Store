@@ -33,7 +33,7 @@ const OwnerSidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => 
     { name: "Cash Settlement", icon: <FaDollarSign />, link: "/owner/cash-settlement" },
     { name: "Stock Management", icon: <FaClipboardCheck />, link: "/owner/stock-management" },
     { name: "Sales Reports", icon: <FaChartLine />, link: "/owner/sales-report" },
-    { name: "Settings", icon: <FaCog />, link: "#" }
+    { name: "Settings", icon: <FaCog />, link: "/owner/setting" }
   ];
 
   return (

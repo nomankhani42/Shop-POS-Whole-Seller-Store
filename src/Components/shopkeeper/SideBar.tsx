@@ -49,7 +49,7 @@ const Sidebar = () => {
       <nav className="mt-10 flex flex-col space-y-4 w-full">
         <SidebarItem href="/shopkeeper" icon={<FiHome size={24} />} text="Dashboard" />
         <SidebarItem href="/shopkeeper/cash-settlement" icon={<FiDollarSign size={24} />} text="Cash Settlement" />
-        <SidebarItem href="/profile" icon={<FiUser size={24} />} text="Profile" />
+        <SidebarItem href="/shopkeeper/profile" icon={<FiUser size={24} />} text="Profile" />
         <SidebarItem href="/shopkeeper/sales-history" icon={<FiClipboard size={24} />} text="Sales History" />
         <SidebarItem href="/shopkeeper/stock-verification" icon={<FiCheckCircle size={24} />} text="Stock Verification" />
       </nav>

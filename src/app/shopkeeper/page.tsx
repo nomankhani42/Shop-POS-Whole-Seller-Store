@@ -7,8 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/Redux Store/index';
 import { FaSearch } from 'react-icons/fa';
-import profile from "@/assets/profile.webp";
-import Image from 'next/image';
+import { useSession } from 'next-auth/react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { toast } from 'react-toastify';
@@ -54,6 +53,8 @@ const Page: React.FC = () => {
 
   const isExpandedMenu = useSelector((state: RootState) => state.sidebar.isExpanded);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
+
+  const {data:session,status}=useSession()
 
   // ✅ Fetch products
   const getProductsData = async () => {
@@ -191,8 +192,10 @@ const Page: React.FC = () => {
                 />
               </div>
               <div className='flex items-center gap-x-4 xl:pr-20'>
-                <h6 className='text-xl font-semibold'>Noman Khan</h6>
-                <Image src={profile} alt="Profile" className="w-10 h-10 rounded-full" />
+                <h6 className='text-xl font-semibold'>{session?.user?.name}</h6>
+                 {/* first name of letter rounded like profile picture      */}
+                <div className=' text-xl font-bold text-white rounded-full h-10 w-10 cursor-pointer flex items-center justify-center  bg-orange-500'>{session?.user?.name[0]}</div>
+
               </div>
             </div>
 

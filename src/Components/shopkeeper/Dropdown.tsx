@@ -1,24 +1,39 @@
-import { AnimatePresence,motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import React, { useState } from 'react';
 import { FaCaretDown, FaCaretUp } from 'react-icons/fa';
 
 interface DropdownProps {
   dropdownList: string[];
+  handleSelect: (status: string, item: any) => void;
+  data: any;
+  disabled?: boolean;
+  label?:string
 }
 
- const Dropdown = ({ dropdownList }: DropdownProps) => {
+const Dropdown = ({ dropdownList, handleSelect, data, disabled = false,label }: DropdownProps) => {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  const [isOpen, setIsOpen] = useState(false);
   const toggle = () => {
-    setIsOpen(!isOpen);
-  }
+    if (!disabled) setIsOpen((prev) => !prev);
+  };
+
   return (
     <div className="relative">
-      <button onClick={toggle} className=" p-2 border flex items-center justify-between border-yellow-600 rounded-md">
-        Pending  {isOpen ? <FaCaretUp /> : <FaCaretDown />}
+      <button
+        onClick={toggle}
+        disabled={disabled}
+        className={`p-2 border flex items-center justify-between rounded-md min-w-[120px] transition-colors ${
+          disabled
+            ? 'bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed'
+            : 'bg-white border-yellow-600 text-black cursor-pointer'
+        }`}
+        type="button"
+      >
+        {label=="received_partially"?"Received Partially":"Pending"} {isOpen ? <FaCaretUp /> : <FaCaretDown />}
       </button>
+
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && !disabled && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -28,7 +43,14 @@ interface DropdownProps {
           >
             <ul className="p-2">
               {dropdownList.map((item, index) => (
-                <li key={index} className="p-2 hover:bg-gray-100 cursor-pointer">
+                <li
+                  key={index}
+                  onClick={() => {
+                    handleSelect(item, data);
+                    toggle();
+                  }}
+                  className="p-2 hover:bg-gray-100 cursor-pointer"
+                >
                   {item}
                 </li>
               ))}
@@ -38,7 +60,6 @@ interface DropdownProps {
       </AnimatePresence>
     </div>
   );
-}
+};
 
 export default Dropdown;
-
