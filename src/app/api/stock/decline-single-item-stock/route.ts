@@ -1,7 +1,7 @@
-import StockModel from '@/models/stock';
+import StockModel from '@/models/Stock';
 import dbConnect from '@/lib/DB';
 import { NextResponse } from 'next/server';
-import { IStockProduct } from '@/models/stock';
+import { IStockProduct } from '@/models/Stock';
 
 export const PATCH = async (req: Request) => {
   await dbConnect();
