@@ -5,6 +5,8 @@ import OwnerLayout from '@/Layout/owner/OwnerLayout';
 import { FaPlus } from 'react-icons/fa';
 import { ImSpinner2 } from 'react-icons/im';
 import FileUpload from '@/Components/FileUpload';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Category {
   _id: string;
@@ -33,11 +35,11 @@ const AddProduct: React.FC = () => {
     brand: '',
     purchasePrice: 0,
     sellingPrice: 0,
-    stock: 10,
-    minStock: 10,
+    stock: 0,
+    minStock: 0,
     discount: 0,
     ownerNotes: '',
-    imageUrl: null, // Updated field name
+    imageUrl: null,
   });
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -51,6 +53,7 @@ const AddProduct: React.FC = () => {
         setCategories(response.data.categories);
       } catch (error) {
         console.error('Error fetching categories:', error);
+        toast.error('Failed to fetch categories.');
       }
     };
     fetchCategories();
@@ -60,25 +63,28 @@ const AddProduct: React.FC = () => {
     const { name, value } = e.target;
     setProduct((prev) => ({
       ...prev,
-      [name]: ['purchasePrice', 'sellingPrice', 'discount', 'stock', 'minStock'].includes(name) ? parseFloat(value) || 0 : value,
+      [name]: ['purchasePrice', 'sellingPrice', 'discount', 'stock', 'minStock'].includes(name)
+        ? parseFloat(value) || 0
+        : value,
     }));
   };
 
   const handleImageUploadSuccess = (response: { url: string }) => {
-    setProduct((prev) => ({ ...prev, imageUrl: response.url })); // Updated to imageUrl
+    setProduct((prev) => ({ ...prev, imageUrl: response.url }));
     setIsUploading(false);
+    toast.success('Image uploaded successfully!');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!product.name || !product.sku || !product.category || !product.brand || !product.sellingPrice || !product.stock || !product.imageUrl) {
-      alert('Please fill all required fields and upload an image!');
+    if (!product.name || !product.sku || !product.category || !product.brand || !product.sellingPrice || !product.imageUrl) {
+      toast.warn('Please fill all required fields and upload an image!');
       return;
     }
 
     try {
       const response = await axios.post('/api/product/add-product', product);
-      alert(response.data.message);
+      toast.success(response.data.message || 'Product added successfully!');
       setProduct({
         name: '',
         sku: '',
@@ -86,105 +92,148 @@ const AddProduct: React.FC = () => {
         brand: '',
         purchasePrice: 0,
         sellingPrice: 0,
-        stock: 10,
-        minStock: 10,
+        stock: 0,
+        minStock: 0,
         discount: 0,
         ownerNotes: '',
-        imageUrl: null, // Reset image URL
+        imageUrl: null,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding product:', error);
-      alert('Failed to add product.');
+      toast.error(error.response?.data?.message || 'Failed to add product.');
     }
   };
 
   return (
     <OwnerLayout>
-      <div className="p-6 bg-gray-50 min-h-screen">
-        <h1 className="text-3xl font-bold text-red-600 mb-6 text-center">🛒 Add New Product</h1>
+      <div className="min-h-screen bg-gray-50 px-4 py-6">
+        <ToastContainer />
+        <div className="max-w-5xl mx-auto bg-white p-5 rounded-xl shadow-md">
+          <h2 className="text-2xl font-bold text-red-600 mb-4 flex items-center gap-2">
+            <FaPlus /> Add New Product
+          </h2>
 
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-lg font-medium text-gray-800">Product Name</label>
-              <input type="text" name="name" placeholder="Example: Apple iPhone 15" value={product.name} onChange={handleInputChange} className="w-full px-3 py-2 border rounded focus:outline-none" required />
-            </div>
+          <form onSubmit={handleSubmit} className="grid gap-y-3">
 
-            <div>
-              <label className="block text-lg font-medium text-gray-800">SKU</label>
-              <input type="text" name="sku" placeholder="Example: SKU123456" value={product.sku} onChange={handleInputChange} className="w-full px-3 py-2 border rounded focus:outline-none" required />
-            </div>
-
-            <div>
-              <label className="block text-lg font-medium text-gray-800">Brand</label>
-              <input type="text" name="brand" placeholder="Example: Apple" value={product.brand} onChange={handleInputChange} className="w-full px-3 py-2 border rounded focus:outline-none" required />
-            </div>
-
-            <div>
-              <label className="block text-lg font-medium text-gray-800">Purchase Price</label>
-              <input type="number" name="purchasePrice" placeholder="Example: 50000" value={product.purchasePrice} onChange={handleInputChange} className="w-full px-3 py-2 border rounded focus:outline-none" required />
-            </div>
-
-            <div>
-              <label className="block text-lg font-medium text-gray-800">Owner Notes</label>
-              <textarea name="ownerNotes" placeholder="Example: Limited stock available" value={product.ownerNotes} onChange={handleInputChange} className="w-full px-3 py-2 border rounded focus:outline-none"></textarea>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-lg font-medium text-gray-800">Category</label>
-              <select name="category" value={product.category} onChange={handleInputChange} className="w-full px-3 py-2 border rounded focus:outline-none" required>
-                <option value="">Select Category</option>
-                {categories.map((cat) => (
-                  <option key={cat._id} value={cat._id}>{cat.title}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-lg font-medium text-gray-800">Stock</label>
-              <input type="number" name="stock" placeholder="Example: 100" value={product.stock} onChange={handleInputChange} className="w-full px-3 py-2 border rounded focus:outline-none" required />
-            </div>
-
-            <div>
-              <label className="block text-lg font-medium text-gray-800">Selling Price</label>
-              <input type="number" name="sellingPrice" placeholder="Example: 55000" value={product.sellingPrice} onChange={handleInputChange} className="w-full px-3 py-2 border rounded focus:outline-none" required />
-            </div>
-
-            <div>
-              <label className="block text-lg font-medium text-gray-800">Minimum Stock</label>
-              <input type="number" name="minStock" placeholder="Example: 10" value={product.minStock} onChange={handleInputChange} className="w-full px-3 py-2 border rounded focus:outline-none" required />
-            </div>
-
-            <div>
-              <label className="block text-lg font-medium text-gray-800">Discount (%)</label>
-              <input type="number" name="discount" placeholder="Example: 10" value={product.discount} onChange={handleInputChange} className="w-full px-3 py-2 border rounded focus:outline-none" required />
-            </div>
-          </div>
-
-          {/* Image Upload Section */}
-          <div className="col-span-2 w-[50%]">
-            <label className="block text-lg font-medium text-gray-800">Upload Product Image</label>
-            <FileUpload fileName="product_image" onUploadProgress={setUploadProgress} onUploadStart={() => setIsUploading(true)} onSuccess={handleImageUploadSuccess} />
-
-            {isUploading && (
-              <div className="mt-2 flex items-center">
-                <ImSpinner2 className="animate-spin text-red-500 text-xl mr-2" />
-                <p className="text-red-600">Uploading...</p>
+            {/* Product Info */}
+            <section>
+              <h3 className="text-base font-semibold text-gray-800 mb-2">🛒 Product Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InputField label="Product Name" name="name" value={product.name} onChange={handleInputChange} placeholder="Apple iPhone 15" />
+                <InputField label="SKU" name="sku" value={product.sku} onChange={handleInputChange} placeholder="SKU123456" />
+                <InputField label="Brand" name="brand" value={product.brand} onChange={handleInputChange} placeholder="Apple" />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select
+                    name="category"
+                    value={product.category}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-1.5 border rounded-md text-sm"
+                    required
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map((cat) => (
+                      <option key={cat._id} value={cat._id}>
+                        {cat.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            )}
+            </section>
 
-            {product.imageUrl && <img src={product.imageUrl} alt="Product" className="w-32 h-32 object-contain mt-4 border p-1" />}
-          </div>
+            {/* Pricing */}
+            <section>
+              <h3 className="text-base font-semibold text-gray-800 mb-2">💰 Pricing & Inventory</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <InputField type="number" label="Purchase Price" name="purchasePrice" value={product.purchasePrice} onChange={handleInputChange} placeholder="50000" />
+                <InputField type="number" label="Selling Price" name="sellingPrice" value={product.sellingPrice} onChange={handleInputChange} placeholder="55000" />
+                <InputField type="number" label="Discount (%)" name="discount" value={product.discount} onChange={handleInputChange} placeholder="10%" />
+                <InputField type="number" label="Stock" name="stock" value={product.stock} onChange={handleInputChange} placeholder="System managed" disabled />
+                <InputField type="number" label="Min Stock" name="minStock" value={product.minStock} onChange={handleInputChange} placeholder="System managed" disabled />
+              </div>
+              <div className="mt-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Owner Notes</label>
+                <textarea
+                  name="ownerNotes"
+                  value={product.ownerNotes}
+                  onChange={handleInputChange}
+                  rows={3}
+                  placeholder="e.g. High demand expected for Eid season..."
+                  className="w-full px-3 py-1.5 border rounded-md resize-none text-sm"
+                />
+              </div>
+            </section>
 
-          <button type="submit" className="col-span-2 bg-red-500 text-white p-3 rounded hover:bg-red-600 transition">Add Product</button>
-        </form>
+            {/* Image */}
+            <section>
+              <h3 className="text-base font-semibold text-gray-800 mb-2">🖼️ Product Image</h3>
+              <FileUpload
+                fileName="product_image"
+                onUploadProgress={setUploadProgress}
+                onUploadStart={() => setIsUploading(true)}
+                onSuccess={handleImageUploadSuccess}
+              />
+              {isUploading && (
+                <div className="mt-2 flex items-center text-yellow-600 text-sm">
+                  <ImSpinner2 className="animate-spin mr-2" /> Uploading...
+                </div>
+              )}
+              {product.imageUrl && (
+                <img
+                  src={product.imageUrl}
+                  alt="Uploaded"
+                  className="mt-3 w-28 h-28 object-contain border rounded"
+                />
+              )}
+            </section>
+
+            {/* Submit */}
+            <div className="text-center pt-2">
+              <button
+                type="submit"
+                className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-6 py-2 rounded-full shadow flex items-center gap-2 justify-center mx-auto"
+              >
+                <FaPlus /> Add Product
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </OwnerLayout>
   );
 };
 
 export default AddProduct;
+
+// Reusable InputField
+const InputField = ({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  type = 'text',
+  disabled = false,
+}: {
+  label: string;
+  name: string;
+  value: any;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  type?: string;
+  disabled?: boolean;
+}) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <input
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      disabled={disabled}
+      className={`w-full px-3 py-1.5 border rounded-md text-sm ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+    />
+  </div>
+);

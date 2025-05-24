@@ -29,7 +29,7 @@ const productSchema = new Schema<IProduct>(
     purchasePrice: { type: Number, required: true, min: 0 },
     sellingPrice: { type: Number, required: true, min: 0 },
     stock: { type: Number, required: true, min: 0 },
-    minStock: { type: Number, default: 10 },
+    minStock: { type: Number, default:0 },
     barcode: { type: String, unique: true, sparse: true },
     qrCodeUrl: { type: String },
     image: { type: String, default: "" }, // ✅ New Image Field

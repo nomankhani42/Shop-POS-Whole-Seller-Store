@@ -28,9 +28,8 @@ export const GET = async () => {
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(today.getDate() - 30);
 
-    // Fetch cash record for this shopkeeper
+    // Fetch cash record for this shopkeeper (you can filter by shopkeeperId if needed)
     const cashDoc = await Cash.findOne({});
-   
 
     // If no cash record exists, return default response
     if (!cashDoc) {
@@ -40,15 +39,18 @@ export const GET = async () => {
       });
     }
 
-    
-    // Filter cash history entries from the last 30 days
-    const recentHistory = cashDoc.cashCollectedHistory.filter((entry) => {
-      const collectedDate = new Date(entry.collectedAt);
-      return collectedDate >= thirtyDaysAgo && collectedDate <= today;
-    });
+    // Filter and sort cash history entries from the last 30 days (latest first)
+    const recentHistory = cashDoc.cashCollectedHistory
+      .filter((entry) => {
+        const collectedDate = new Date(entry.collectedAt);
+        return collectedDate >= thirtyDaysAgo && collectedDate <= today;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.collectedAt).getTime() - new Date(a.collectedAt).getTime()
+      );
 
-    // Return available cash and filtered history
-   
+    // Return available cash and sorted history
     return NextResponse.json({
       availableCash: cashDoc.availableCash,
       cashCollectedHistory: recentHistory,

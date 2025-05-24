@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"; // Import Next.js API types
 import dbConnect from "@/lib/DB"; // Custom DB connection utility
-import SalesTransaction from "@/models/SaleTransication"
+import SalesTransaction from "@/models/SaleTransication";
 import {
   startOfDay,
   startOfWeek,
@@ -17,8 +17,8 @@ export const GET = async (req: NextRequest) => {
     const now = new Date(); // Get the current date/time
 
     // Calculate today's start and end timestamps
-    const todayStart = startOfDay(now); // Example: 2025-04-22T00:00:00.000Z
-    const todayEnd = endOfDay(now);     // Example: 2025-04-22T23:59:59.999Z
+    const todayStart = startOfDay(now);
+    const todayEnd = endOfDay(now);
 
     // Calculate the start and end of the current week (starts on Monday)
     const weekStart = startOfWeek(now, { weekStartsOn: 1 });
@@ -28,39 +28,32 @@ export const GET = async (req: NextRequest) => {
     const monthStart = startOfMonth(now);
     const monthEnd = endOfMonth(now);
 
-    // Fetch ALL sales transactions from the database
-    const allTransactions = await SalesTransaction.find();
+    // Fetch all transactions and sort by latest (newest first)
+    const allTransactions = await SalesTransaction.find().sort({ createdAt: -1 });
 
-    // Filter transactions for today, and sum the netAmount of each
+    // Filter today's transactions and sum netAmount
     const todaySales = allTransactions
-      .filter((t) => t.createdAt >= todayStart && t.createdAt <= todayEnd) // Only today's
-      .reduce((acc, t) => acc + t.netAmount, 0); // Sum netAmount
+      .filter((t) => t.createdAt >= todayStart && t.createdAt <= todayEnd)
+      .reduce((acc, t) => acc + t.netAmount, 0);
 
-    // Filter transactions for this week, then sum netAmount
+    // Filter weekly transactions and sum netAmount
     const weeklySales = allTransactions
       .filter((t) => t.createdAt >= weekStart && t.createdAt <= weekEnd)
       .reduce((acc, t) => acc + t.netAmount, 0);
 
-    // Filter transactions for this month, then sum netAmount
+    // Filter monthly transactions and sum netAmount
     const monthlySales = allTransactions
       .filter((t) => t.createdAt >= monthStart && t.createdAt <= monthEnd)
       .reduce((acc, t) => acc + t.netAmount, 0);
 
-    // Prepare a map to count how many quantities of each product were sold
-    const productMap: Record<
-      string,
-      { name: string; quantity: number }
-    > = {};
+    // Build product quantity map
+    const productMap: Record<string, { name: string; quantity: number }> = {};
 
-    // Loop through every transaction
     allTransactions.forEach((t) => {
-      // Loop through each product in that transaction
       t.products.forEach((product) => {
-        // If product already exists in the map, increase its quantity
         if (productMap[product.productId]) {
           productMap[product.productId].quantity += product.quantity;
         } else {
-          // Else, add it to the map with initial data
           productMap[product.productId] = {
             name: product.name,
             quantity: product.quantity,
@@ -69,28 +62,28 @@ export const GET = async (req: NextRequest) => {
       });
     });
 
-    // Convert productMap into an array and sort by quantity in descending order
+    // Create most sold product list
     const mostSoldProducts = Object.entries(productMap)
       .map(([productId, data]) => ({
         productId,
         name: data.name,
         quantitySold: data.quantity,
       }))
-      .sort((a, b) => b.quantitySold - a.quantitySold); // Most sold on top
+      .sort((a, b) => b.quantitySold - a.quantitySold); // Most sold first
 
-    // Send the response JSON with all calculated results
+    // Return response
     return NextResponse.json({
-      success: true,          // Request was successful
-      todaySales,             // Today's net sales
-      weeklySales,            // This week's net sales
-      monthlySales,           // This month's net sales
-      mostSoldProducts,       // Most sold products by quantity
-      allTransactions,        // All transactions data
+      success: true,
+      todaySales,
+      weeklySales,
+      monthlySales,
+      mostSoldProducts,
+      allTransactions, // already sorted latest first
     });
   } catch (error) {
-    console.error("Error in sales overview API:", error); // Log any error
+    console.error("Error in sales overview API:", error);
     return NextResponse.json(
-      { success: false, message: "Internal Server Error" }, // Send error response
+      { success: false, message: "Internal Server Error" },
       { status: 500 }
     );
   }

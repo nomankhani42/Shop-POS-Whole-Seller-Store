@@ -54,7 +54,7 @@ const Page: React.FC = () => {
   const isExpandedMenu = useSelector((state: RootState) => state.sidebar.isExpanded);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
-  const {data:session,status}=useSession()
+  const { data: session, status } = useSession()
 
   // ✅ Fetch products
   const getProductsData = async () => {
@@ -145,7 +145,7 @@ const Page: React.FC = () => {
       setDisabledQuantityId(null);
     }
   };
-  
+
 
   // ✅ Decrease Quantity
   const decrease_Quanitity = async (productId: string) => {
@@ -191,12 +191,14 @@ const Page: React.FC = () => {
                   placeholder='Search Products'
                 />
               </div>
-              <div className='flex items-center gap-x-4 xl:pr-20'>
-                <h6 className='text-xl font-semibold'>{session?.user?.name}</h6>
-                 {/* first name of letter rounded like profile picture      */}
-                <div className=' text-xl font-bold text-white rounded-full h-10 w-10 cursor-pointer flex items-center justify-center  bg-orange-500'>{session?.user?.name[0]}</div>
+              {
+                session?.user?.name && <div className='flex items-center gap-x-4 xl:pr-20'>
+                  <h6 className='text-xl font-semibold'>{session?.user?.name}</h6>
+                  {/* first name of letter rounded like profile picture      */}
+                  <div className=' text-xl font-bold text-white rounded-full h-10 w-10 cursor-pointer flex items-center justify-center  bg-orange-500'>{session?.user?.name[0]}</div>
 
-              </div>
+                </div>
+              }
             </div>
 
             {/* Category Swiper */}
