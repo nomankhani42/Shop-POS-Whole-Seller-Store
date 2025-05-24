@@ -60,7 +60,15 @@ const StockDetailsPage = () => {
                   </p>
                 </div>
                 <div className="text-sm text-gray-700">
-                  <p>Status: <span className="capitalize font-medium">{stockData.stockStatus}</span></p>
+                  <p>Status: <span className="capitalize font-medium">{
+                  stockData.stockStatus=="received"?"Received":
+                  stockData.stockStatus=="not_received"?"NotReceived":
+                  stockData.stockStatus=="pending"?"Pending":
+                  stockData.stockStatus=="received_partially"?"Received Partially":
+                  "Not Received"
+
+                  }
+                    </span></p>
                   <p>Total Products: <span className="font-medium">{stockData.products?.length}</span></p>
                 </div>
               </div>

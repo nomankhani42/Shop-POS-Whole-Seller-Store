@@ -366,14 +366,16 @@ const StockHistorySection = ({
                       entry.status === 'received'
                         ? 'text-green-500'
                         : entry.status === 'pending'
-                        ? 'text-yellow-500'
-                        : 'text-red-500'
+                        ? 'text-yellow-500' :
+                         entry.status=="received_partially"? "text-orange-500" :
+                        'text-red-500'
                     }`}
                   >
                     { entry.status === 'received'
                         ? 'Received'
-                        : entry.status === 'pending'
-                        ? 'Pending'
+                        : entry.status === 'pending' 
+                        ? 'Pending' : 
+                        entry.status=="received_partially"? "Partially Received"
                         : 'Not Received' }
                   </td>
                   <td className="border p-3 text-center">

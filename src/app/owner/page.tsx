@@ -6,6 +6,7 @@ import OwnerLayout from '@/Layout/owner/OwnerLayout';
 import { motion } from 'framer-motion';
 import { Bar, Line } from 'react-chartjs-2';
 import 'chart.js/auto';
+import { IProduct } from '@/models/product';
 
 interface MostSoldProduct {
   productId: string;
@@ -20,13 +21,23 @@ const OwnerDashboard = () => {
     monthly: 0,
   });
   const [mostSoldProducts, setMostSoldProducts] = useState<MostSoldProduct[]>([]);
-  const [lowStockProducts] = useState([
-    { name: 'Solar Cable 10m', stock: 5 },
-    { name: 'Battery 200AH', stock: 3 },
-  ]);
+  const [lowStockProducts,setLowStockProduct] = useState<[IProduct] | []>([]);
+  
+
+  const getLowStockProducts=async()=>{
+     
+    const response=await axios.get("api/product/get-products")
+      
+    if(response.data){
+      const LowStockproducts=response.data.products.filter((item:IProduct)=> item.stock<10);
+      setLowStockProduct(LowStockproducts)
+      
+    }
+  }
 
   // Fetch sales data
   useEffect(() => {
+    getLowStockProducts()
     const fetchSalesData = async () => {
       try {
         const res = await axios.get('/api/sales/get-complete-record');
