@@ -3,7 +3,7 @@
 import mongoose, { Schema, Document, Types, models } from "mongoose";
 
 // Interface for a single product in the stock
-interface IStockProduct {
+export interface IStockProduct {
   productId: Types.ObjectId; // Ref to Product
   quantity: number; // Expected quantity
   status: "pending" | "received" | "not_received"; // Per-product status

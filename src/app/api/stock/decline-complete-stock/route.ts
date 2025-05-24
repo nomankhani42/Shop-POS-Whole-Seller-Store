@@ -2,7 +2,7 @@ import StockModel from "@/models/Stock";
 import ProductModel from "@/models/product"
 import dbConnect from "@/lib/DB";
 import { NextResponse } from "next/server";
-import {IStockProduct} from "@/models/Stock"
+import { IStockProduct } from "@/models/Stock"
 
 export const PATCH = async (req: Request) => {
   await dbConnect();
@@ -20,12 +20,12 @@ export const PATCH = async (req: Request) => {
     }
 
     // Set all products' status to "not_received" if not already "received"
-     await Promise.all(
+    await Promise.all(
       stock.products.map(async (item: IStockProduct) => {
         if (item.status != "received") {
           const product = await ProductModel.findById(item.productId);
           if (product) {
-            
+
             const findIndex = stock.products.findIndex(
               (i: IStockProduct) => i.productId.toString() === item.productId.toString()
             );
@@ -40,26 +40,26 @@ export const PATCH = async (req: Request) => {
     // If all products are "received", keep stockStatus as "received"
     // If some are "received", and any pending product then partially received
     // if all are none received then not received 
-   // Determine stock status
-const allReceived = stock.products.every((item: any) => item.status === "received");
-const allNotReceived = stock.products.every((item: any) => item.status === "not_received");
-const allPending = stock.products.every((item: any) => item.status === "pending");
-const someReceived = stock.products.some((item: any) => item.status === "received");
-const somePending = stock.products.some((item: any) => item.status === "pending");
+    // Determine stock status
+    const allReceived = stock.products.every((item: any) => item.status === "received");
+    const allNotReceived = stock.products.every((item: any) => item.status === "not_received");
+    const allPending = stock.products.every((item: any) => item.status === "pending");
+    const someReceived = stock.products.some((item: any) => item.status === "received");
+    const somePending = stock.products.some((item: any) => item.status === "pending");
 
-if (allReceived) {
-  stock.stockStatus = "received";
-} else if (allNotReceived) {
-  stock.stockStatus = "not_received";
-} else if (someReceived && somePending) {
-  stock.stockStatus = "pending";
-} else if (someReceived) {
-  stock.stockStatus = "received_partially";
-} else if (allPending) {
-  stock.stockStatus = "pending";
-} else {
-  stock.stockStatus = "not_received";
-}
+    if (allReceived) {
+      stock.stockStatus = "received";
+    } else if (allNotReceived) {
+      stock.stockStatus = "not_received";
+    } else if (someReceived && somePending) {
+      stock.stockStatus = "pending";
+    } else if (someReceived) {
+      stock.stockStatus = "received_partially";
+    } else if (allPending) {
+      stock.stockStatus = "pending";
+    } else {
+      stock.stockStatus = "not_received";
+    }
 
     await stock.save();
 
