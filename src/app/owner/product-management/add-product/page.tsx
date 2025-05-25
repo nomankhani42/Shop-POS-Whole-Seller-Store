@@ -7,6 +7,9 @@ import { ImSpinner2 } from 'react-icons/im';
 import FileUpload from '@/Components/FileUpload';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Loader } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
 
 interface Category {
   _id: string;
@@ -45,6 +48,8 @@ const AddProduct: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [loading,setLoading]=useState<boolean>(false)
+  const router=useRouter()
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -72,7 +77,7 @@ const AddProduct: React.FC = () => {
   const handleImageUploadSuccess = (response: { url: string }) => {
     setProduct((prev) => ({ ...prev, imageUrl: response.url }));
     setIsUploading(false);
-    toast.success('Image uploaded successfully!');
+    
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,8 +88,11 @@ const AddProduct: React.FC = () => {
     }
 
     try {
+      setLoading(true)
       const response = await axios.post('/api/product/add-product', product);
-      toast.success(response.data.message || 'Product added successfully!');
+      if(response.data.success){
+        setLoading(false)
+        toast.success(response.data.message || 'Product added successfully!');
       setProduct({
         name: '',
         sku: '',
@@ -98,6 +106,12 @@ const AddProduct: React.FC = () => {
         ownerNotes: '',
         imageUrl: null,
       });
+
+      router.push("/owner/product-management")
+
+      }
+
+      
     } catch (error: any) {
       console.error('Error adding product:', error);
       toast.error(error.response?.data?.message || 'Failed to add product.');
@@ -189,12 +203,12 @@ const AddProduct: React.FC = () => {
             </section>
 
             {/* Submit */}
-            <div className="text-center pt-2">
-              <button
+            <div className="text-center pt-2 mr-auto">
+              <button disabled={loading}
                 type="submit"
-                className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-6 py-2 rounded-full shadow flex items-center gap-2 justify-center mx-auto"
+                className="  bg-yellow-500 py-2 px-6 text-white  rounded-md"
               >
-                <FaPlus /> Add Product
+                {loading ?<Loader className=' h-6 w-6 my-1 mx-3 animate-spin text-white' />:(<span className='flex flex-row items-center gap-x-5 '><FaPlus /> Add Product</span>)}
               </button>
             </div>
           </form>

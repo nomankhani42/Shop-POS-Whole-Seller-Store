@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 interface DeleteProductModalProps {
   isOpen: boolean;
@@ -24,7 +25,7 @@ const DeleteProductModal: React.FC<DeleteProductModalProps> = ({
     setLoading(true);
     try {
       await axios.delete(`/api/product/delete-product/${productId}`);
-      alert("Product deleted successfully!");
+      toast.success("Product Deleted Successfully!");
       onDeleteSuccess(); // Refresh product list or update UI
       onClose();
     } catch (error) {
